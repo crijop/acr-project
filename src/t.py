@@ -3,6 +3,7 @@
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from pcapy import *
+import datetime
 
 #classe de Colorização
 class bcolors:
@@ -34,7 +35,7 @@ def callback(jdr, data):
     if isinstance(child, IP):
         child = child.child()
         if isinstance(child, TCP):
-            if child.get_th_dport() == 993:
+            if child.get_th_dport() == 143 or child.get_th_dport() == 993:
                 print 'IMAP'
                 print dir(child)
                 print child.get_data_as_string()
@@ -87,17 +88,25 @@ while (resposta != "1" or resposta != "2"):
     if resposta == "1":
         caminhoFile = testeCap(resposta)
         print bcolors.OKBLUE + "Estatisticas a efectuar no file: " + caminhoFile + "!" + bcolors.ENDC
-        pcap = open_offline('captura.pcap')
-        pcap.loop(0, callback)
+        pcap = open_offline(caminhoFile)
+        i = 0
+        pcap.setfilter("tcp port 143 or tcp port 993")
+        (header, payload) = pcap.next()
+        while header:
+            print ('%d -> %s: captured %d bytes, truncated to %d bytes'
+                 %(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
+            i +=1
+            (header, payload) = pcap.next()
         break
         pass
     
     #estatistica de uma captura
     elif resposta == "2":
-        print '\033[40m' + bcolors.OKGREEN + "Vai ser efecutada uma Captura, mas siga as instruções seguintes!" + bcolors.ENDC
+        print bcolors.OKGREEN + "Vai ser efecutada uma Captura, mas siga as instruções seguintes!" + bcolors.ENDC
         dev = testeCap(resposta)
         pcap = open_live(dev , 65536 , 1 , 0)
         pcap.loop(0, callback)
+        
         pass
     else:
         print bcolors.FAIL + "A sua resposta não é válida, volte a responder!" + bcolors.ENDC
