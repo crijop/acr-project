@@ -6,10 +6,14 @@ Created on 2013/02/20
 
 class Packet(object):
         
-    def __init__(self, nr,  protocolo, time):
+    def __init__(self, nr,  protocolo, time, clEthernet, clIp, clTcp, cImap):
         self.nr = nr
         self.protocolo = protocolo
         self.time = time
+        self.clEthernet = clEthernet
+        self.clIp = clIp
+        self.clTcp = clTcp
+        self.cImap = cImap
         pass
     
     def get_nr(self):
@@ -19,6 +23,25 @@ class Packet(object):
     def get_protocolo(self):
         return self.protocolo
         pass
+    
     def get_time(self):
         return self.time
         pass
+    
+    def get_clEthernet(self):
+        return self.clEthernet
+        pass
+    
+    def get_clIp(self):
+        return self.clIp
+        pass
+    
+    def get_clTcp(self):
+        return self.clTcp
+        pass
+    
+    def get_cImap(self):
+        return self.cImap
+        pass
+    
+    

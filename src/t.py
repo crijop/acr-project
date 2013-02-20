@@ -85,8 +85,7 @@ class SniffImap(object):
                      
                 self.analisePacote(i, packet)
                 #print lista
-                print i
-                
+                #header.getlen() tamanho packert
                 i +=1
                 (header, packet) = pcap.next()
             
@@ -163,9 +162,9 @@ class SniffImap(object):
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
         
-        p = Packet(nr, str(eth_protocol), "time")
+        p = Packet(nr, str(eth_protocol), "time", "Ethernet", "IP", "TCP", "IMAP")
         
-        #Destination MAC,  Source MAC, Protocolo
+        
         self.listaPacotes.append(p)
         pass
     '''

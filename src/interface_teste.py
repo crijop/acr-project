@@ -75,8 +75,10 @@ class MainMenu(wx.Frame):
         self.list_ctrl.InsertColumn(1, 'Tempo')
         self.list_ctrl.InsertColumn(2, 'Origem', width=125)
         self.list_ctrl.InsertColumn(3, 'Destino', width=125)
-        self.list_ctrl.InsertColumn(3, 'Protocolo')
-        self.list_ctrl.InsertColumn(3, 'Dimensão')
+        self.list_ctrl.InsertColumn(4, 'Protocolo', width=125)
+        self.list_ctrl.InsertColumn(5, 'Dimensão', width=125)
+        self.list_ctrl.InsertColumn(6, 'Mac Origen', width=125)
+        self.list_ctrl.InsertColumn(7, 'Mac Destino', width=125)
         
              
         
@@ -117,6 +119,10 @@ class MainMenu(wx.Frame):
             self.list_ctrl.InsertStringItem(count, str(item.get_nr()))
             self.list_ctrl.SetStringItem(count, 1, item.get_protocolo())
             self.list_ctrl.SetStringItem(count, 2, item.get_time())
+            self.list_ctrl.SetStringItem(count, 3, item.get_clEthernet())
+            self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
+            self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
+            self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
             self.list_ctrl.UpdateWindowUI()
             self.Show()
             count += 1
