@@ -34,7 +34,7 @@ class MainMenu(wx.Frame):
         self.window_2_pane_2 = wx.Panel(self.window_2, -1)
         self.window_3 = wx.SplitterWindow(self.window_2_pane_2, -1, style=wx.SP_3D | wx.SP_BORDER)
         self.window_3_pane_1 = wx.ScrolledWindow(self.window_3, -1, style=wx.TAB_TRAVERSAL)
-        self.tree_ctrl = wx.TreeCtrl(self.window_3_pane_1, -1, style=wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER)
+        self.tree_ctrl = wx.TreeCtrl(self.window_3_pane_1, -1, style=wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER | wx.TR_HIDE_ROOT)
         self.window_3_pane_2 = wx.ScrolledWindow(self.window_3, -1, style=wx.TAB_TRAVERSAL)
         self.buffer_Lable = wx.StaticText(self.window_3_pane_2, -1, "label_2")
         self.frame_1_statusbar = self.CreateStatusBar(1, 0)
@@ -117,12 +117,14 @@ class MainMenu(wx.Frame):
         for item in list:
             
             self.list_ctrl.InsertStringItem(count, str(item.get_nr()))
-            self.list_ctrl.SetStringItem(count, 1, item.get_protocolo())
-            self.list_ctrl.SetStringItem(count, 2, item.get_time())
+            self.list_ctrl.SetStringItem(count, 1, str(item.get_time()))
+            self.list_ctrl.SetStringItem(count, 2, item.get_protocolo())
+           
             self.list_ctrl.SetStringItem(count, 3, item.get_clEthernet())
             self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
             self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
             self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
+
             self.list_ctrl.UpdateWindowUI()
             self.Show()
             count += 1
@@ -135,6 +137,11 @@ class MainMenu(wx.Frame):
     def openFileEvent(self, event):
         
         self.Bind(wx.EVT_MENU, event, self.openCapture)
+        
+        pass
+    def packetList_Selected_event(self, event):
+        
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, event, self.list_ctrl)
         
         pass
     
@@ -164,3 +171,35 @@ class MainMenu(wx.Frame):
         self.list_ctrl.DeleteAllItems()
         self.Show()
         self.list_ctrl.UpdateWindowUI()
+        
+    '''
+    Coosntroi a arvore com a informação presente na captura
+    '''    
+    def makeTree(self):
+        
+        
+        root = self.tree_ctrl.AddRoot('Root')
+
+        packet = self.tree_ctrl.AppendItem(root, "Pacote", -1,-1, None)
+        ethernet = self.tree_ctrl.AppendItem(root, 'Ethernet', -1,-1, None)
+        ip = self.tree_ctrl.AppendItem(root, 'Protocolo Internet (IP)', -1,-1, None)
+        tcp = self.tree_ctrl.AppendItem(root, 'Protocolo de Controlo de Tramisão (TCP)', -1,-1, None)
+        imap = self.tree_ctrl.AppendItem(root, 'Protocolo de Acesso a Mensagens de Internet (IMAP)', -1,-1, None)
+        
+        self.tree_ctrl.UpdateWindowUI()
+        '''for method in failsList:
+            
+            classe = wx.TreeItemData()
+            classe.SetData(method)
+            metodo = self.tree.AppendItem(root, '' + str(method.getFunctionName()), -1,-1, classe)
+            #metodo.
+            for test in method.getTestList():
+                data = wx.TreeItemData()
+                data.SetData(test)
+                no = self.tree.AppendItem(metodo, '' + "<"+str(test.getLineNumber())+"> " + str(test.getName()), -1, -1, data)
+                '''
+    def changeStatusBarInfo(self, nr):
+        
+        self.frame_1_statusbar.SetStatusText("Número de pacotes: " + str(nr) + " Tempo da captura: " + str("tempo"))
+        self.Show()
+        pass

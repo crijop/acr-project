@@ -1,15 +1,16 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
 
+from Packet import Packet
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from interface_teste import MainMenu
 from pcapy import *
-from Packet import Packet
 from struct import *
 import datetime
 import os
 import socket
+import time
 import wx
 
 #classe de Colorização
@@ -47,6 +48,7 @@ class SniffImap(object):
         self.frame_1.Show()
         
         self.frame_1.openFileEvent(self.openCapture_file)
+        self.frame_1.packetList_Selected_event(self.selectPacketEvent)
         
         #Começo da captura
         #resposta = self.dialogoInicial()
@@ -77,18 +79,21 @@ class SniffImap(object):
     def startCaptureSaved(self, caminhoFile):
             pcap = open_offline(caminhoFile)
             i = 1
+            
             pcap.setfilter("tcp port 143 or tcp port 993")
             (header, packet) = pcap.next()
             while header:
                 #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
                 #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
-                     
-                self.analisePacote(i, packet)
+                floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
+                
+                #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(floatTime)))  
+                self.analisePacote(i, packet, float(floatTime))
                 #print lista
                 #header.getlen() tamanho packert
                 i +=1
                 (header, packet) = pcap.next()
-            
+            self.frame_1.changeStatusBarInfo(i - 1)
             self.frame_1.field_List_ctrl(self.listaPacotes)
             pass
         
@@ -154,7 +159,7 @@ class SniffImap(object):
     '''
     Analisar pacote
     '''
-    def analisePacote(self,nr, packet):
+    def analisePacote(self,nr, packet, epoch_time):
         #parse ethernet header
         eth_length = 14
         
@@ -162,7 +167,9 @@ class SniffImap(object):
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
         
-        p = Packet(nr, str(eth_protocol), "time", "Ethernet", "IP", "TCP", "IMAP")
+
+        p = Packet(nr, str(eth_protocol), epoch_time, "Ethernet", "IP", "TCP", "IMAP")
+
         
         
         self.listaPacotes.append(p)
@@ -176,6 +183,12 @@ class SniffImap(object):
         if path != None:
             self.frame_1.clearAllCaptures()
             self.startCaptureSaved(path)
+            
+    def selectPacketEvent(self, event):
+        
+        self.frame_1.makeTree()
+        
+        pass
     
 if __name__ == "__main__":
     SniffImap()    

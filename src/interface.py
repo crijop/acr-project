@@ -42,7 +42,8 @@ class MainMenu(wx.Frame):
         self.__set_properties()
         self.__do_layout()
 
-        self.Bind(wx.EVT_MENU, self.openFile, id=1)
+        self.Bind(wx.EVT_MENU, self.openFile, id=-1)
+        
         # end wxGlade
 
     def __set_properties(self):
@@ -84,6 +85,10 @@ class MainMenu(wx.Frame):
 
     def openFile(self, event):  # wxGlade: MainMenu.<event_handler>
         print "Event handler `openFile' not implemented"
+        event.Skip()
+
+    def PacketSelected(self, event):  # wxGlade: MainMenu.<event_handler>
+        print "Event handler `PacketSelected' not implemented"
         event.Skip()
 
 # end of class MainMenu
