@@ -3,8 +3,8 @@
 
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
-from pcapy import *
 from interface_teste import MainMenu
+from pcapy import *
 from struct import *
 import datetime
 import socket
@@ -35,6 +35,8 @@ class SniffImap(object):
     
     decoder = EthDecoder()
     def __init__(self):
+        
+        self.listaPacotes = []
         
         app = wx.PySimpleApp(0)
         wx.InitAllImageHandlers()
@@ -148,8 +150,7 @@ class SniffImap(object):
     '''
     Analisar pacote
     '''
-    def analisePacote(self, packet):
-        lista = []
+    def analisePacote(self,nr, packet):
         #parse ethernet header
         eth_length = 14
         
@@ -157,11 +158,10 @@ class SniffImap(object):
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
         
+        p = self.Packet(nr, self.eth_addr(packet[0:6]), self.eth_addr(packet[6:12]), "", "", str(eth_protocol), "")
         
         #Destination MAC,  Source MAC, Protocolo
-        lista.append([self.eth_addr(packet[0:6]),self.eth_addr(packet[6:12]), str(eth_protocol)])
-        
-        return lista
+        self.listaPacotes.append([self.eth_addr(packet[0:6]),self.eth_addr(packet[6:12]), str(eth_protocol)])
         pass
     
 if __name__ == "__main__":

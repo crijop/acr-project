@@ -115,9 +115,9 @@ def parse_packet(packet) :
             acknowledgement = tcph[3]
             doff_reserved = tcph[4]
             tcph_length = doff_reserved >> 4
-            ''' 
+             
             print 'Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Sequence Number : ' + str(sequence) + ' Acknowledgement : ' + str(acknowledgement) + ' TCP header length : ' + str(tcph_length)
-            '''
+    
             h_size = eth_length + iph_length + tcph_length * 4
             data_size = len(packet) - h_size
             
