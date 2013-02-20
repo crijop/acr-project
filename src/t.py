@@ -5,8 +5,10 @@ from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from interface_teste import MainMenu
 from pcapy import *
+from Packet import Packet
 from struct import *
 import datetime
+import os
 import socket
 import wx
 
@@ -44,50 +46,53 @@ class SniffImap(object):
         app.SetTopWindow(self.frame_1)
         self.frame_1.Show()
         
-      
+        self.frame_1.openFileEvent(self.openCapture_file)
         
         #Começo da captura
-        resposta = self.dialogoInicial()
-        while (resposta != "1" or resposta != "2"):
+        #resposta = self.dialogoInicial()
+        #while (resposta != "1" or resposta != "2"):
             #estatistica de um ficheiro pcap
-            if resposta == "1":
-                caminhoFile = self.testeCap(resposta)
-                print bcolors.OKBLUE + "Estatisticas a efectuar no file: " + caminhoFile + "!" + bcolors.ENDC
-                pcap = open_offline(caminhoFile)
-                i = 1
-                pcap.setfilter("tcp port 143 or tcp port 993")
-                (header, packet) = pcap.next()
-                while header:
-                    #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
-                    #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
-                         
-                    lista = self.analisePacote(packet)
-                    #print lista
-                    print i
-                    self.frame_1.field_lineOfList_ctrl(i, lista)
-                    i +=1
-                    (header, packet) = pcap.next()
-                break
-                pass
+            #if resposta == "1":
+                #caminhoFile = self.testeCap(resposta)
+                #print bcolors.OKBLUE + "Estatisticas a efectuar no file: " + caminhoFile + "!" + bcolors.ENDC
             
-            #estatistica de uma captura
-            elif resposta == "2":
-                print bcolors.OKGREEN + "Vai ser efecutada uma Captura, mas siga as instruções seguintes!" + bcolors.ENDC
-                dev = self.testeCap(resposta)
-                pcap = open_live(dev , 65536 , 1 , 0)
-                pcap.loop(0, self.callback)
-                
-                pass
-            else:
-                print bcolors.FAIL + "A sua resposta não é válida, volte a responder!" + bcolors.ENDC
-                resposta = self.dialogoInicial()
-                pass
+            
+        '''#estatistica de uma captura
+        elif resposta == "2":
+            print bcolors.OKGREEN + "Vai ser efecutada uma Captura, mas siga as instruções seguintes!" + bcolors.ENDC
+            dev = self.testeCap(resposta)
+            pcap = open_live(dev , 65536 , 1 , 0)
+            pcap.loop(0, self.callback)
+            
             pass
+        else:
+            print bcolors.FAIL + "A sua resposta não é válida, volte a responder!" + bcolors.ENDC
+            resposta = self.dialogoInicial()
+            pass
+        pass'''
         app.MainLoop()
     
         
    
-
+    def startCaptureSaved(self, caminhoFile):
+            pcap = open_offline(caminhoFile)
+            i = 1
+            pcap.setfilter("tcp port 143 or tcp port 993")
+            (header, packet) = pcap.next()
+            while header:
+                #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
+                #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
+                     
+                self.analisePacote(i, packet)
+                #print lista
+                print i
+                
+                i +=1
+                (header, packet) = pcap.next()
+            
+            self.frame_1.field_List_ctrl(self.listaPacotes)
+            pass
+        
     def callback(self, jdr, data):
         packet = self.decoder.decode(data)
         child = packet.child()
@@ -158,11 +163,20 @@ class SniffImap(object):
         eth = unpack('!6s6sH' , eth_header)
         eth_protocol = socket.ntohs(eth[2])
         
-        p = self.Packet(nr, self.eth_addr(packet[0:6]), self.eth_addr(packet[6:12]), "", "", str(eth_protocol), "")
+        p = Packet(nr, str(eth_protocol), "time")
         
         #Destination MAC,  Source MAC, Protocolo
-        self.listaPacotes.append([self.eth_addr(packet[0:6]),self.eth_addr(packet[6:12]), str(eth_protocol)])
+        self.listaPacotes.append(p)
         pass
+    '''
+    evento abrir captura a partir do ficheiro
+    '''
+    def openCapture_file(self, event):
+        
+        path = self.frame_1.onOpenFile()
+        if path != None:
+            self.frame_1.clearAllCaptures()
+            self.startCaptureSaved(path)
     
 if __name__ == "__main__":
     SniffImap()    

@@ -28,67 +28,63 @@ class MainMenu(wx.Frame):
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Estastisticas")
         self.SetMenuBar(self.frame_1_menubar)
         # Menu Bar end
-        self.panel_1 = wx.Panel(self, -1)
-        self.panel_2 = wx.Panel(self.panel_1, -1)
-        self.label_nameOfInterface = wx.StaticText(self.panel_2, -1, "Nome da Interface:")
-        self.panel_3 = wx.Panel(self.panel_1, -1)
-        self.ListControl_Packge = wx.ListCtrl(self.panel_3, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
-        self.panel_4 = wx.Panel(self.panel_1, -1)
-        self.tree_ctrl_1 = wx.TreeCtrl(self.panel_4, -1, style=wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER)
-        self.panel_5 = wx.Panel(self.panel_1, -1)
-        self.label_1 = wx.StaticText(self.panel_5, -1, "label_1")
+        self.window_2 = wx.SplitterWindow(self, -1, style=wx.SP_3D | wx.SP_BORDER)
+        self.window_2_pane_1 = wx.ScrolledWindow(self.window_2, -1, style=wx.TAB_TRAVERSAL)
+        self.list_ctrl = wx.ListCtrl(self.window_2_pane_1, -1, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.window_2_pane_2 = wx.Panel(self.window_2, -1)
+        self.window_3 = wx.SplitterWindow(self.window_2_pane_2, -1, style=wx.SP_3D | wx.SP_BORDER)
+        self.window_3_pane_1 = wx.ScrolledWindow(self.window_3, -1, style=wx.TAB_TRAVERSAL)
+        self.tree_ctrl = wx.TreeCtrl(self.window_3_pane_1, -1, style=wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER)
+        self.window_3_pane_2 = wx.ScrolledWindow(self.window_3, -1, style=wx.TAB_TRAVERSAL)
+        self.buffer_Lable = wx.StaticText(self.window_3_pane_2, -1, "label_2")
+        self.frame_1_statusbar = self.CreateStatusBar(1, 0)
 
         self.__set_properties()
         self.__do_layout()
+
+        self.Bind(wx.EVT_MENU, self.openFile, id=1)
         # end wxGlade
 
     def __set_properties(self):
         # begin wxGlade: MainMenu.__set_properties
         self.SetTitle("frame_1")
         self.SetSize((800, 715))
-        self.panel_2.SetMinSize((800, 100))
-        self.panel_2.SetBackgroundColour(wx.Colour(255, 0, 0))
+        self.window_2_pane_1.SetMinSize((800, 343))
+        self.window_2_pane_1.SetScrollRate(10, 10)
+        self.window_3_pane_1.SetScrollRate(10, 10)
+        self.window_3_pane_2.SetScrollRate(10, 10)
+        self.frame_1_statusbar.SetStatusWidths([-1])
+        # statusbar fields
+        frame_1_statusbar_fields = ["frame_1_statusbar"]
+        for i in range(len(frame_1_statusbar_fields)):
+            self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: MainMenu.__do_layout
-        sizer_1 = wx.BoxSizer(wx.VERTICAL)
-        sizer_2 = wx.BoxSizer(wx.VERTICAL)
-        sizer_5 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer_3 = wx.BoxSizer(wx.HORIZONTAL)
-        grid_sizer_1 = wx.GridSizer(2, 1, 0, 0)
-        grid_sizer_1.Add(self.label_nameOfInterface, 0, 0, 0)
-        self.panel_2.SetSizer(grid_sizer_1)
-        sizer_2.Add(self.panel_2, 1, 0, 0)
-        sizer_3.Add(self.ListControl_Packge, 1, wx.EXPAND, 0)
-        
-        #Adiciona os cabeçalhos das colunas
-        self.ListControl_Packge.InsertColumn(0, 'No.', width=50)
-        self.ListControl_Packge.InsertColumn(1, 'Tempo')
-        self.ListControl_Packge.InsertColumn(2, 'Origem', width=125)
-        self.ListControl_Packge.InsertColumn(3, 'Destino', width=125)
-        self.ListControl_Packge.InsertColumn(3, 'Protocolo')
-        self.ListControl_Packge.InsertColumn(3, 'Dimensão')
-        
-        self.ListControl_Packge.InsertStringItem(0, "teste")
-        self.ListControl_Packge.SetStringItem(0, 1, "01/19/2010")
-        self.ListControl_Packge.SetStringItem(0, 2, "USA")
-        
-       
-        self.panel_3.SetSizer(sizer_3)
-        sizer_2.Add(self.panel_3, 1, wx.EXPAND, 0)
-        sizer_4.Add(self.tree_ctrl_1, 1, wx.EXPAND, 0)
-        self.panel_4.SetSizer(sizer_4)
-        sizer_2.Add(self.panel_4, 1, wx.EXPAND, 0)
-        sizer_5.Add(self.label_1, 0, 0, 0)
-        self.panel_5.SetSizer(sizer_5)
-        sizer_2.Add(self.panel_5, 1, wx.EXPAND, 0)
-        self.panel_1.SetSizer(sizer_2)
-        sizer_1.Add(self.panel_1, 1, wx.EXPAND, 0)
-        self.SetSizer(sizer_1)
+        sizer_6 = wx.BoxSizer(wx.VERTICAL)
+        sizer_7 = wx.BoxSizer(wx.VERTICAL)
+        sizer_10 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_9 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_8 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_8.Add(self.list_ctrl, 1, wx.EXPAND, 0)
+        self.window_2_pane_1.SetSizer(sizer_8)
+        sizer_9.Add(self.tree_ctrl, 1, wx.EXPAND, 0)
+        self.window_3_pane_1.SetSizer(sizer_9)
+        sizer_10.Add(self.buffer_Lable, 0, 0, 0)
+        self.window_3_pane_2.SetSizer(sizer_10)
+        self.window_3.SplitHorizontally(self.window_3_pane_1, self.window_3_pane_2)
+        sizer_7.Add(self.window_3, 1, wx.EXPAND, 0)
+        self.window_2_pane_2.SetSizer(sizer_7)
+        self.window_2.SplitHorizontally(self.window_2_pane_1, self.window_2_pane_2)
+        sizer_6.Add(self.window_2, 1, wx.EXPAND, 0)
+        self.SetSizer(sizer_6)
         self.Layout()
         # end wxGlade
+
+    def openFile(self, event):  # wxGlade: MainMenu.<event_handler>
+        print "Event handler `openFile' not implemented"
+        event.Skip()
 
 # end of class MainMenu
 if __name__ == "__main__":
