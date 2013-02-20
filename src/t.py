@@ -1,9 +1,12 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
+
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from pcapy import *
 import datetime
+import socket
+from struct import *
 
 #classe de Colorização
 class bcolors:
@@ -82,6 +85,31 @@ def dialogoInicial():
     return resposta
     pass
 
+
+#Convert a string of 6 characters of ethernet address into a dash separated hex string
+def eth_addr (a) :
+    b = "{0:02x}:{1:02x}:{2:02x}:{3:02x}:{4:02x}:{5:02x}".\
+        format(ord(a[0]) , ord(a[1]) , ord(a[2]), ord(a[3]), ord(a[4]) , ord(a[5]))
+    return b
+'''
+Analisar pacote
+'''
+def analisePacote(packet):
+    lista = []
+    #parse ethernet header
+    eth_length = 14
+    
+    eth_header = packet[:eth_length]
+    eth = unpack('!6s6sH' , eth_header)
+    eth_protocol = socket.ntohs(eth[2])
+    
+    #Destination MAC,  Source MAC, Protocolo
+    lista.append([eth_addr(packet[0:6]),eth_addr(packet[6:12]), str(eth_protocol)])
+    return lista
+    pass
+
+
+
 resposta = dialogoInicial()
 while (resposta != "1" or resposta != "2"):
     #estatistica de um ficheiro pcap
@@ -89,14 +117,17 @@ while (resposta != "1" or resposta != "2"):
         caminhoFile = testeCap(resposta)
         print bcolors.OKBLUE + "Estatisticas a efectuar no file: " + caminhoFile + "!" + bcolors.ENDC
         pcap = open_offline(caminhoFile)
-        i = 0
+        i = 1
         pcap.setfilter("tcp port 143 or tcp port 993")
-        (header, payload) = pcap.next()
+        (header, packet) = pcap.next()
         while header:
-            print ('%d -> %s: captured %d bytes, truncated to %d bytes'
-                 %(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
+            #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
+            #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
+                 
+            lista = analisePacote(packet)
+            print lista
             i +=1
-            (header, payload) = pcap.next()
+            (header, packet) = pcap.next()
         break
         pass
     
