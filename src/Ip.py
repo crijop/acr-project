@@ -5,11 +5,15 @@ Created on 2013/02/20
 '''
 
 class Ip(object):
-    def __init__(self, version, headerLength, timeToLive, protocoloIP, ipDst, ipSrc):
+    def __init__(self, version, headerLength, totalLengh, identification, flags, timeToLive, protocoloIP, headerChecksum, ipDst, ipSrc):
         self.version = version
         self.headerLength = headerLength
+        self.totalLengh = totalLengh
+        self.identification = identification
+        self.flags = flags
         self.timeToLive = timeToLive
         self.protocoloIP = protocoloIP
+        self.headerChecksum = headerChecksum
         self.ipDst = ipDst
         self.ipSrc = ipSrc
         pass
@@ -22,12 +26,28 @@ class Ip(object):
         return self.headerLength
         pass
     
+    def get_totalLengh(self):
+        return self.totalLengh
+        pass
+    
+    def get_identification(self):
+        return self.identification
+        pass
+    
+    def get_flags(self):
+        return self.flags
+        pass
+    
     def get_timeToLive(self):
         return self.timeToLive
         pass
     
     def get_protocoloIP(self):
         return self.protocoloIP
+        pass
+    
+    def get_headerChecksum(self):
+        return self.headerChecksum
         pass
     
     def get_ipDst(self):

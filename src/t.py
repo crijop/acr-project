@@ -1,7 +1,10 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
 
+from Ethernet import *
+from Ip import *
 from Packet import Packet
+from Tcp import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from interface_teste import MainMenu
@@ -160,18 +163,73 @@ class SniffImap(object):
     Analisar pacote
     '''
     def analisePacote(self,nr, packet, epoch_time):
-        #parse ethernet header
-        eth_length = 14
         
+        #################################################
+        #ETHERNET HEADER  
+        eth_length = 14
         eth_header = packet[:eth_length]
         eth = unpack('!6s6sH' , eth_header)
+        macDst = self.eth_addr(packet[0:6])
+        macSrc = self.eth_addr(packet[6:12])
         eth_protocol = socket.ntohs(eth[2])
+        #################################################
         
+        #################################################
+        #Protocolo IP HEADER  
+        ip_header = packet[eth_length:20+eth_length]
+        print ip_header
+        iph = unpack('!BBHHHBBH4s4s' , ip_header)
+        version_ihl = iph[0]
+        # >> retirar quatro bits ao final
+        version = version_ihl >> 4
+        headerLenght = version_ihl & 0xF
+        #headerLenght = headerLenght * 4 #bytes
+        totalLengh = iph[2]
+        identification = iph[3]
+        flagsIP = iph[4]
+        iph_length = headerLenght * 4
+        timeToLive = iph[5]
+        protocol = iph[6]
+        headerChecksum = iph[7]
+        s_addr = socket.inet_ntoa(iph[8])
+        d_addr = socket.inet_ntoa(iph[9])
+        ipDst = str(d_addr)
+        ipSrc = str(s_addr)
+        #################################################
+        
+        #################################################
+        #Protocolo TPC HEADER        
+        t = iph_length + eth_length
+        tcp_header = packet[t:t+20]
+        tcph = unpack('!HHLLBBHHH' , tcp_header)
+        srcPort = tcph[0]
+        dstPort = tcph[1]
+        sequenceNumber = tcph[2]
+        acknowledgement = tcph[3]
+        doff_reserved = tcph[4]
+        tcpHeaderLength = doff_reserved >> 4
+        flagsTcp = tcph[5]
+        wSizeValue = tcph[6]
+        checksun = tcph[7]
+        #################################################
+        
+        #################################################
+        #Protocolo IMAP HEADER
+        
+        #################################################
+        
+        #Protocolo Ethernet
+        ethernet = Ethernet(macDst, macSrc, eth_protocol)
+        
+        #Protocolo IP
+        ip = Ip(str(version), str(headerLenght), str(totalLengh), str(identification), str(flagsIP), str(timeToLive), str(protocol), str(headerChecksum), ipDst, ipSrc)
+        
+        #Protocolo TCP
+        tcp = Tcp(str(srcPort), str(dstPort), str(sequenceNumber), str(acknowledgement), str(tcpHeaderLength), flagsTcp, wSizeValue, checksun)
+        
+        #Pacote
+        p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, "IMAP")
 
-        p = Packet(nr, str(eth_protocol), epoch_time, "Ethernet", "IP", "TCP", "IMAP")
-
-        
-        
         self.listaPacotes.append(p)
         pass
     '''

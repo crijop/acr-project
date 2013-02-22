@@ -120,10 +120,15 @@ class MainMenu(wx.Frame):
             self.list_ctrl.SetStringItem(count, 1, str(item.get_time()))
             self.list_ctrl.SetStringItem(count, 2, item.get_protocolo())
            
-            self.list_ctrl.SetStringItem(count, 3, item.get_clEthernet())
-            self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
-            self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
-            self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
+            self.list_ctrl.SetStringItem(count, 3, str(item.get_clEthernet().get_macSrc()))
+            self.list_ctrl.SetStringItem(count, 4, str(item.get_clEthernet()))
+            self.list_ctrl.SetStringItem(count, 5, str(item.get_clEthernet()))
+            
+            
+            
+            #self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
+            #self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
+            #self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
 
             self.list_ctrl.UpdateWindowUI()
             self.Show()
