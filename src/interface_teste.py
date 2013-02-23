@@ -112,8 +112,7 @@ class MainMenu(wx.Frame):
 
     def field_List_ctrl(self,  list):
         count = 0
- 
-            
+        
         for item in list:
             
             self.list_ctrl.InsertStringItem(count, str(item.get_nr()))
@@ -129,6 +128,12 @@ class MainMenu(wx.Frame):
             #self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
             #self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
             #self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
+            
+            if count % 2:
+                self.list_ctrl.SetItemBackgroundColour(count, "white")
+            else:
+                self.list_ctrl.SetItemBackgroundColour(count, "#9ce9ef")
+            #index += 1
 
             self.list_ctrl.UpdateWindowUI()
             self.Show()

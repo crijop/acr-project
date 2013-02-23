@@ -243,6 +243,9 @@ class SniffImap(object):
             self.startCaptureSaved(path)
             
     def selectPacketEvent(self, event):
+        currentItem = event.m_itemIndex
+        print currentItem
+        print self.frame_1.list_ctrl.GetItem(currentItem)
         
         self.frame_1.makeTree()
         
