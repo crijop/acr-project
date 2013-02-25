@@ -18,7 +18,7 @@ class MainMenu(wx.Frame):
         # Menu Bar
         self.frame_1_menubar = wx.MenuBar()
         wxglade_tmp_menu = wx.Menu()
-        wxglade_tmp_menu.Append(wx.NewId(), "Nova Captura", "", wx.ITEM_NORMAL)
+        self.newCaptura = wxglade_tmp_menu.Append(wx.NewId(), "Nova Captura", "", wx.ITEM_NORMAL)
         self.openCapture = wxglade_tmp_menu.Append(wx.NewId(), "Abrir Captura", "", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura", "", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura Como...", "", wx.ITEM_NORMAL)
@@ -153,6 +153,10 @@ class MainMenu(wx.Frame):
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, event, self.list_ctrl)
         
+        pass
+    
+    def newCaptura_event(self, event):
+        self.Bind(wx.EVT_MENU, event, self.newCaptura)
         pass
     
     def sair_event(self, event):

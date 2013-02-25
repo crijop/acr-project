@@ -53,6 +53,7 @@ class SniffImap(object):
         self.frame_1.openFileEvent(self.openCapture_file)
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
         self.frame_1.sair_event(self.exitProgram)
+        self.frame_1.newCaptura_event(self.newCapturaEvent)
         
         
         #Começo da captura
@@ -78,29 +79,64 @@ class SniffImap(object):
             pass
         pass'''
         app.MainLoop()
+        pass
     
+    def interfaceRede(self):
+        interface = findalldevs()
+        return interface
+        pass
+    
+    def startCapture(self):
+        interface = self.interfaceRede()
+        '''
+        for d in  interface:
+            print d
+            pass        
+        '''
+        '''
+        Arranjar maneira de passar o valor da interface que o utilizador devolver para 
+        meter na variavel interface....
+        '''
+        interface = "eth0"
         
-   
-    def startCaptureSaved(self, caminhoFile):
-            pcap = open_offline(caminhoFile)
-            i = 1
+        
+        pcap = open_live(interface , 65536 , 1 , 0)
+        i = 1
+        
+        pcap.setfilter("tcp port 143 or tcp port 993")
+        (header, packet) = pcap.next()
+        while header:
+            '''Analisar pacote'''
             
-            pcap.setfilter("tcp port 143 or tcp port 993")
+            print "OLAAAA"
+            #self.analisePacote(i, packet, float(floatTime))
+            i +=1
             (header, packet) = pcap.next()
-            while header:
-                #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
-                #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
-                floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
-                
-                #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(floatTime)))  
-                self.analisePacote(i, packet, float(floatTime))
-                #print lista
-                #header.getlen() tamanho packert
-                i +=1
-                (header, packet) = pcap.next()
-            self.frame_1.changeStatusBarInfo(i - 1)
-            self.frame_1.field_List_ctrl(self.listaPacotes)
-            pass
+        
+        #pcap.loop(0, self.callback)
+        pass
+    
+    
+    def startCaptureSaved(self, caminhoFile):
+        pcap = open_offline(caminhoFile)
+        i = 1
+        
+        pcap.setfilter("tcp port 143 or tcp port 993")
+        (header, packet) = pcap.next()
+        while header:
+            #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
+            #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
+            floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
+            
+            #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(floatTime)))  
+            self.analisePacote(i, packet, float(floatTime))
+            #print lista
+            #header.getlen() tamanho packert
+            i +=1
+            (header, packet) = pcap.next()
+        self.frame_1.changeStatusBarInfo(i - 1)
+        self.frame_1.field_List_ctrl(self.listaPacotes)
+        pass
         
     def callback(self, jdr, data):
         packet = self.decoder.decode(data)
@@ -108,12 +144,14 @@ class SniffImap(object):
         if isinstance(child, IP):
             child = child.child()
             if isinstance(child, TCP):
-                if child.get_th_dport() == 143 or child.get_th_dport() == 993:
-                    print 'IMAP'
-                    print dir(child)
-                    print child.get_data_as_string()
-                    print child.get_buffer_as_string()
-                    print child.get_bytes()
+                #if child.get_th_dport() == 143 or child.get_th_dport() == 993:
+                print 'IMAP'
+                    #===========================================================
+                    # print dir(child)
+                    # print child.get_data_as_string()
+                    # print child.get_buffer_as_string()
+                    # print child.get_bytes()
+                    #===========================================================
     
         pass
     
@@ -261,6 +299,12 @@ class SniffImap(object):
             #print "sair"
             exit(0)
             pass
+        pass
+    
+    def newCapturaEvent(self, event):
+        self.startCapture()
+        pass
+    
         
     
 if __name__ == "__main__":
