@@ -217,12 +217,13 @@ class SniffImap(object):
         #################################################
         #Protocolo IP HEADER  
         ip_header = packet[eth_length:20+eth_length]
-        print ip_header
+        #print ip_header
         iph = unpack('!BBHHHBBH4s4s' , ip_header)
         version_ihl = iph[0]
         # >> retirar quatro bits ao final
         version = version_ihl >> 4
         headerLenght = version_ihl & 0xF
+        
         #headerLenght = headerLenght * 4 #bytes
         totalLengh = iph[2]
         identification = iph[3]
@@ -270,6 +271,7 @@ class SniffImap(object):
         #Pacote
         p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, "IMAP")
 
+
         self.listaPacotes.append(p)
         pass
     '''
@@ -284,10 +286,9 @@ class SniffImap(object):
             
     def selectPacketEvent(self, event):
         currentItem = event.m_itemIndex
-        print currentItem
-        print self.frame_1.list_ctrl.GetItem(currentItem)
         
-        self.frame_1.makeTree()
+        
+        self.frame_1.makeTree(self.listaPacotes[int(currentItem)])
         
         pass
     

@@ -23,7 +23,7 @@ class Ip(object):
         pass
     
     def get_headerLength(self):
-        return self.headerLength
+        return 4 * int(self.headerLength)
         pass
     
     def get_totalLengh(self):
