@@ -52,6 +52,8 @@ class SniffImap(object):
         
         self.frame_1.openFileEvent(self.openCapture_file)
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
+        self.frame_1.sair_event(self.exitProgram)
+        
         
         #Começo da captura
         #resposta = self.dialogoInicial()
@@ -250,6 +252,16 @@ class SniffImap(object):
         self.frame_1.makeTree()
         
         pass
+    
+    '''
+    Trata do envento de saida do programa
+    '''    
+    def exitProgram(self, event):  # wxGlade: PyUnitiABCP.<event_handler>
+        if wx.MessageBox("Deseja sair do programa?", "Confirmar", wx.YES_NO) == wx.YES :
+            #print "sair"
+            exit(0)
+            pass
+        
     
 if __name__ == "__main__":
     SniffImap()    

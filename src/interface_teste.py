@@ -22,7 +22,7 @@ class MainMenu(wx.Frame):
         self.openCapture = wxglade_tmp_menu.Append(wx.NewId(), "Abrir Captura", "", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura", "", wx.ITEM_NORMAL)
         wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura Como...", "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.NewId(), "Sair", "", wx.ITEM_NORMAL)
+        self.sair = wxglade_tmp_menu.Append(wx.NewId(), "Sair", "", wx.ITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Ficheiro")
         wxglade_tmp_menu = wx.Menu()
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Estastisticas")
@@ -152,6 +152,12 @@ class MainMenu(wx.Frame):
     def packetList_Selected_event(self, event):
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, event, self.list_ctrl)
+        
+        pass
+    
+    def sair_event(self, event):
+        
+        self.Bind(wx.EVT_MENU, event, self.sair)
         
         pass
     
