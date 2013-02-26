@@ -28,6 +28,14 @@ class MainMenu(wx.Frame):
         wxglade_tmp_menu = wx.Menu()
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Estastisticas")
         self.SetMenuBar(self.frame_1_menubar)
+        
+        capturaMenu = wx.Menu()
+        self.frame_1_menubar.Append(capturaMenu, "Captura")
+        self.SetMenuBar(self.frame_1_menubar)
+        
+        self.stopCaptura = capturaMenu.Append(wx.NewId(), "Parar Captura", "", wx.ITEM_NORMAL)
+        
+        
         # Menu Bar end
         self.window_2 = wx.SplitterWindow(self, -1, style=wx.SP_3D | wx.SP_BORDER)
         self.window_2_pane_1 = wx.ScrolledWindow(self.window_2, -1, style=wx.TAB_TRAVERSAL)
@@ -40,6 +48,9 @@ class MainMenu(wx.Frame):
         self.buffer_Lable = wx.StaticText(self.window_3_pane_2, -1, "label_2")
         self.frame_1_statusbar = self.CreateStatusBar(1, 0)
 
+
+        self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.expandItemTree_Event, self.tree_ctrl)
+        self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.colapsItemTree_Event, self.tree_ctrl)
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
@@ -166,6 +177,11 @@ class MainMenu(wx.Frame):
         
         pass
     
+    def stopCaptura_event(self, event):
+        self.Bind(wx.EVT_MENU, event, self.stopCaptura)
+        
+        pass
+    
     def onOpenFile(self):
         self.currentDirectory = os.getcwd()
         filePath = None
@@ -203,6 +219,7 @@ class MainMenu(wx.Frame):
 
         packet = self.tree_ctrl.AppendItem(root, "Pacote", -1,-1, None)   
         
+        
         self.tree_ctrl.AppendItem(packet, 'Numero do Pacote: ' + str(packetInfo.get_nr()), -1,-1, None)
         self.tree_ctrl.AppendItem(packet, 'Tamanho do Pacote: ' + str(packetInfo.get_nr()), -1,-1, None)
         self.tree_ctrl.AppendItem(packet, 'Chegada do Pacote: ' + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(packetInfo.get_time()))), -1,-1, None)
@@ -228,8 +245,8 @@ class MainMenu(wx.Frame):
         tcp = self.tree_ctrl.AppendItem(root, 'Protocolo de Controlo de Tramisão (TCP)', -1,-1, None)
         imap = self.tree_ctrl.AppendItem(root, 'Protocolo de Acesso a Mensagens de Internet (IMAP)', -1,-1, None)
         
-        
-        
+        self.tree_ctrl.Expand(packet)
+      
         self.tree_ctrl.UpdateWindowUI()
         '''for method in failsList:
             
@@ -242,6 +259,18 @@ class MainMenu(wx.Frame):
                 data.SetData(test)
                 no = self.tree.AppendItem(metodo, '' + "<"+str(test.getLineNumber())+"> " + str(test.getName()), -1, -1, data)
                 '''
+    
+    def expandItemTree_Event(self, event):
+        
+        item = event.GetItem()
+        
+        print self.tree_ctrl.GetItemText(item)
+        pass
+        
+    def colapsItemTree_Event(self, event):
+        
+        
+        pass
     def changeStatusBarInfo(self, nr):
         
         self.frame_1_statusbar.SetStatusText("Número de pacotes: " + str(nr) + " Tempo da captura: " + str("tempo"))

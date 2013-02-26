@@ -10,6 +10,7 @@ from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from interface_teste import MainMenu
 from pcapy import *
 from struct import *
+from threading import Thread
 import datetime
 import os
 import socket
@@ -43,6 +44,7 @@ class SniffImap(object):
     def __init__(self):
         
         self.listaPacotes = []
+        self.stopCature = False
         
         app = wx.PySimpleApp(0)
         wx.InitAllImageHandlers()
@@ -54,6 +56,7 @@ class SniffImap(object):
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
         self.frame_1.sair_event(self.exitProgram)
         self.frame_1.newCaptura_event(self.newCapturaEvent)
+        self.frame_1.stopCaptura_event(self.stopCaturaEvent)
         
         
         #Começo da captura
@@ -87,7 +90,7 @@ class SniffImap(object):
         pass
     
     def startCapture(self):
-        interface = self.interfaceRede()
+        #interface = self.interfaceRede()
         '''
         for d in  interface:
             print d
@@ -99,20 +102,24 @@ class SniffImap(object):
         '''
         interface = "eth0"
         
-        
+        print "vou começar a escutar a rede"
         pcap = open_live(interface , 65536 , 1 , 0)
         i = 1
         
-        pcap.setfilter("tcp port 143 or tcp port 993")
+        #pcap.setfilter("tcp port 143 or tcp port 993")
         (header, packet) = pcap.next()
         while header:
             '''Analisar pacote'''
             
-            print "OLAAAA"
+            print "OLAAAA ", i
             #self.analisePacote(i, packet, float(floatTime))
             i +=1
             (header, packet) = pcap.next()
-        
+            
+            if self.stopCature == True:
+                break
+            pass
+        print "Acabei de escutar"
         #pcap.loop(0, self.callback)
         pass
     
@@ -303,8 +310,15 @@ class SniffImap(object):
         pass
     
     def newCapturaEvent(self, event):
-        self.startCapture()
+        
+        self.t = Thread(target=self.startCapture, args=())
+        self.t.start()
+    
         pass
+    
+    def stopCaturaEvent(self, event):
+        
+        self.stopCature = True
     
         
     
