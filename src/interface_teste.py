@@ -108,19 +108,14 @@ class MainMenu(wx.Frame):
         self.Layout()
         # end wxGlade
 
-    def field_lineOfList_ctrl(self, countPackeg, infoLine):
-        count = 1
+    def field_lineOfList_ctrl(self, countPackeg, item):
         
-        for lista in infoLine:
-            self.list_ctrl.InsertStringItem(countPackeg - 1, str(countPackeg))
-            for item in lista:
-                
-                self.list_ctrl.SetStringItem(countPackeg - 1, count, str(item))
-                self.list_ctrl.UpdateWindowUI()
-                self.Show()
-                count += 1
-            
-            pass
+        self.list_ctrl.InsertStringItem(countPackeg - 1, str(countPackeg))   
+        self.list_ctrl.SetStringItem(countPackeg - 1, 1, str(item.get_protocolo()))
+        self.list_ctrl.UpdateWindowUI()
+        self.Show()
+        
+        pass
 
     def field_List_ctrl(self,  list):
         count = 0
