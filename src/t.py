@@ -1,21 +1,25 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
 
+import multiprocessing
 from Ethernet import *
 from Ip import *
-from Packet import Packet
+from Packet import *
 from Tcp import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
-from interface_teste import MainMenu
+
 from pcapy import *
 from struct import *
 from threading import Thread
 import datetime
 import os
 import socket
+import sys
 import time
 import wx
+from data import *
+
 
 #classe de Colorização
 class bcolors:
@@ -41,22 +45,35 @@ class bcolors:
 class SniffImap(object):
     
     decoder = EthDecoder()
-    def __init__(self):
+    
+    def __init__(self, frame):
         
+        print "Inicio do SniffImap"
+        
+        self.frame_1 = frame
         self.listaPacotes = []
-        self.stopCature = False
+        #global unrefined_packets
+        self.unrefined_packets = []
+        self.jobs = []
+        self.pcap = None
+        self.__testeeeee = 0
         
-        app = wx.PySimpleApp(0)
-        wx.InitAllImageHandlers()
-        self.frame_1 = MainMenu(None, -1, "")
-        app.SetTopWindow(self.frame_1)
-        self.frame_1.Show()
-        
+          
+        #app = wx.PySimpleApp(0)
+        #wx.InitAllImageHandlers()
+        #self.frame_1 = MainMenu(None, -1, "")
+        #app.SetTopWindow(self.frame_1)
+        #self.frame_1.Show()
+        self.frame_1.printTeste()
         self.frame_1.openFileEvent(self.openCapture_file)
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
         self.frame_1.sair_event(self.exitProgram)
         self.frame_1.newCaptura_event(self.newCapturaEvent)
         self.frame_1.stopCaptura_event(self.stopCaturaEvent)
+        
+        #app.MainLoop()
+        
+        
         
         
         #Começo da captura
@@ -81,21 +98,34 @@ class SniffImap(object):
             resposta = self.dialogoInicial()
             pass
         pass'''
-        app.MainLoop()
+        
+        print "AQUIIIIIIIIIIIIIIIIIIIIIIIIIIIIII fim do construtor"
         pass
     
+        
+      
+        
+    def get_StopState(self):
+        
+        return SniffImap.stopCature
+          
     def interfaceRede(self):
         interface = findalldevs()
         return interface
         pass
     
-    def startCapture(self):
+    def startCapture(self, lista, numero):
         #interface = self.interfaceRede()
         '''
         for d in  interface:
             print d
             pass        
         '''
+        self.frame_1.clearAllCaptures()
+        
+       
+        
+        #self.t_begin_Filed.join()
         '''
         Arranjar maneira de passar o valor da interface que o utilizador devolver para 
         meter na variavel interface....
@@ -103,24 +133,45 @@ class SniffImap(object):
         interface = "eth0"
         
         print "vou começar a escutar a rede"
-        pcap = open_live(interface , 65536 , 1 , 0)
+        self.pcap = open_live(interface , 65536 , 1 , 0)
+        tIncial = int(round(time.time() * 20000))
+        
         i = 1
         
         #pcap.setfilter("tcp port 143 or tcp port 993")
-        (header, packet) = pcap.next()
+        (header, packet) = self.pcap.next()
         while header:
             '''Analisar pacote'''
             
-            print "OLAAAA ", i
-            self.anasilePacoteNewCaptura(i, packet)
+            
+            self.__testeeeee += 1
+            self.frame_1.add_packet(packet)
+            print len(self.frame_1.get_allpackets())
+            #print self.pcap
+            #print "fiz append", len(self.unrefined_packets)
+            #print "Vou Criar a Thread ", i
+            
+            #self.t_begin_analise = multiprocessing.Process(target=self.anasilePacoteNewCaptura, args=(i, packet))
+            #self.t_begin_analise.start()
+            #self.t_begin_analise.join()
+            #print "Thread Criada", i
+            
             
             i +=1
-            (header, packet) = pcap.next()
+            (header, packet) = self.pcap.next()
+            tfinal = int(round(time.time() * 1000))
+            #print self.sData.get_stopCapture_State()
+            if tfinal - tIncial >= 20000:
+                print "Vou terminar"
+                self.frame_1.forceExit()
+                self.exit(0)
+                pass
             
-            if self.stopCature == True:
-                break
+            
             pass
         print "Acabei de escutar"
+        
+        
         #pcap.loop(0, self.callback)
         pass
     
@@ -214,10 +265,39 @@ class SniffImap(object):
         #Pacote
         p = Packet("", str(eth_protocol), "", ethernet, ip, tcp, "IMAP")
         
-        self.frame_1.field_lineOfList_ctrl(i, p)
+        
         self.listaPacotes.append(p)
         
+        self.frame_1.field_lineOfList_ctrl(i, p)
         pass
+    
+    
+    def filedRows_ofList(self):
+        
+        print "Time para preparar para imprimir"
+        position = 0
+        
+        while True:
+            
+            len_of_unrefined_ListPackets = len(self.unrefined_packets)
+            #print len_of_unrefined_ListPackets
+            #print "Mostrar", len_of_unrefined_ListPackets 
+            #print len_of_unrefined_ListPackets
+            if len_of_unrefined_ListPackets > position:
+                print "Mostrar"
+                self.t_begin_showInInterface = multiprocessing.Process(target=self.anasilePacoteNewCaptura, args=(position, self.unrefined_packets[position]))
+                self.jobs.append(self.t_begin_showInInterface)
+                self.t_begin_showInInterface.start()
+                self.t_begin_showInInterface.join()
+                
+                position += 1
+            else:
+                #Não Faz nada
+                #print "Vou Esperar ate que possa fazer imprimir de novo"
+                
+                pass
+            pass
+        
     
     
         
@@ -381,23 +461,63 @@ class SniffImap(object):
     def exitProgram(self, event):  # wxGlade: PyUnitiABCP.<event_handler>
         if wx.MessageBox("Deseja sair do programa?", "Confirmar", wx.YES_NO) == wx.YES :
             #print "sair"
-            exit(0)
+            for p in self.jobs:
+                p.terminate()
+                p.join()
+            
+            self.frame_1.Destroy()
+            sys.exit(0)
+            
             pass
         pass
     
     def newCapturaEvent(self, event):
-        self.t = Thread(target=self.startCapture, args=())
-        self.t.start()
+        print "Começar nova Captura"
+        self.__testeeeee = 5
+        self.t_beguin_capture = multiprocessing.Process(target=self.startCapture, args=(self.unrefined_packets, self.__testeeeee ))
+        self.jobs.append(self.t_beguin_capture)
+        #self.t_beguin_capture.daemon = True
+        self.t_beguin_capture.start()
+        
+        
+        self.t_begin_Filed = multiprocessing.Process(target=self.filedRows_ofList, args=())
+        self.jobs.append(self.t_begin_Filed)
+        self.t_begin_Filed.start()
+        
+        #self.t_beguin_capture.join()
     
         pass
     
     def stopCaturaEvent(self, event):
         
-        self.stopCature = True
+        #SniffImap.stopCature = 1
+        #self.pcap = None
+        #self.pcap = None
+        print self.__testeeeee
+        self.__testeeeee = 10
+        print self.__testeeeee
+        
+        print "ta cheio", self.frame_1.get_allpackets()
+        
+        '''print self.t_beguin_capture.is_alive()
+        
+        #print "Mostrar esta merda", self.sData.get_allpackets()
+        self.t_beguin_capture.terminate()
+        self.t_beguin_capture.join()
+        
+        print self.t_beguin_capture.is_alive()
+        
+        #print self.sData.alive()
+        
+        
+        #self.t_begin_Filed.join()
+        '''
+        print "captra com premissao para parar"
+        pass
     
         
-    
+'''    
 if __name__ == "__main__":
     SniffImap()    
-    
+    '''
     
