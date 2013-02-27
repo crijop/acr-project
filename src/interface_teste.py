@@ -129,13 +129,15 @@ class MainMenu(wx.Frame):
         # end wxGlade
 
     def field_lineOfList_ctrl(self, countPackeg, item):
+        print "To na linha", countPackeg
+        self.list_ctrl.InsertStringItem(0 - 1, str(countPackeg))   
+        self.list_ctrl.SetStringItem(1 - 1, 1, "testes")
         
-        self.list_ctrl.InsertStringItem(countPackeg - 1, str(countPackeg))   
-        self.list_ctrl.SetStringItem(countPackeg - 1, 1, "testes")
+        print "Cheguei no fim"
         
         #self.list_ctrl.Update()
         #self.sizer_8.Show()
-        self.list_ctrl.UpdateWindowUI()
+        #self.list_ctrl.UpdateWindowUI()
         
         #self.list_ctrl.Refresh()
         

@@ -1,24 +1,24 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
 
-import multiprocessing
 from Ethernet import *
 from Ip import *
 from Packet import *
 from Tcp import *
+from data import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
-
 from pcapy import *
 from struct import *
 from threading import Thread
 import datetime
+from multiprocessing import *
 import os
 import socket
 import sys
 import time
 import wx
-from data import *
+
 
 
 #classe de Colorização
@@ -114,7 +114,7 @@ class SniffImap(object):
         return interface
         pass
     
-    def startCapture(self, lista, numero):
+    def startCapture(self, listUnrefinedPackets):
         #interface = self.interfaceRede()
         '''
         for d in  interface:
@@ -144,9 +144,10 @@ class SniffImap(object):
             '''Analisar pacote'''
             
             
-            self.__testeeeee += 1
-            self.frame_1.add_packet(packet)
-            print len(self.frame_1.get_allpackets())
+            #self.__testeeeee += 1
+            #print self.__testeeeee
+            #self.frame_1.add_packet(packet)
+            #print len(self.frame_1.get_allpackets())
             #print self.pcap
             #print "fiz append", len(self.unrefined_packets)
             #print "Vou Criar a Thread ", i
@@ -155,6 +156,8 @@ class SniffImap(object):
             #self.t_begin_analise.start()
             #self.t_begin_analise.join()
             #print "Thread Criada", i
+            
+            listUnrefinedPackets.append(packet)
             
             
             i +=1
@@ -267,25 +270,26 @@ class SniffImap(object):
         
         
         self.listaPacotes.append(p)
-        
+        #print "meter na interface"
         self.frame_1.field_lineOfList_ctrl(i, p)
         pass
     
     
-    def filedRows_ofList(self):
+    def filedRows_ofList(self, listUnrefinedPackets):
         
         print "Time para preparar para imprimir"
         position = 0
         
         while True:
             
-            len_of_unrefined_ListPackets = len(self.unrefined_packets)
+            len_of_unrefined_ListPackets = len(listUnrefinedPackets)
+            
             #print len_of_unrefined_ListPackets
             #print "Mostrar", len_of_unrefined_ListPackets 
             #print len_of_unrefined_ListPackets
             if len_of_unrefined_ListPackets > position:
-                print "Mostrar"
-                self.t_begin_showInInterface = multiprocessing.Process(target=self.anasilePacoteNewCaptura, args=(position, self.unrefined_packets[position]))
+                #print "Mostrar"
+                self.t_begin_showInInterface = Process(target=self.anasilePacoteNewCaptura, args=(position, listUnrefinedPackets[position]))
                 self.jobs.append(self.t_begin_showInInterface)
                 self.t_begin_showInInterface.start()
                 self.t_begin_showInInterface.join()
@@ -474,13 +478,18 @@ class SniffImap(object):
     def newCapturaEvent(self, event):
         print "Começar nova Captura"
         self.__testeeeee = 5
-        self.t_beguin_capture = multiprocessing.Process(target=self.startCapture, args=(self.unrefined_packets, self.__testeeeee ))
+        
+        manager = Manager()
+        
+        self.l = manager.list()
+        
+        self.t_beguin_capture = Process(target=self.startCapture, args=(self.l,))
         self.jobs.append(self.t_beguin_capture)
         #self.t_beguin_capture.daemon = True
         self.t_beguin_capture.start()
         
         
-        self.t_begin_Filed = multiprocessing.Process(target=self.filedRows_ofList, args=())
+        self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,))
         self.jobs.append(self.t_begin_Filed)
         self.t_begin_Filed.start()
         
@@ -493,13 +502,16 @@ class SniffImap(object):
         #SniffImap.stopCature = 1
         #self.pcap = None
         #self.pcap = None
+        
+        #print self.cacete
+        print self.l
         print self.__testeeeee
         self.__testeeeee = 10
         print self.__testeeeee
         
         print "ta cheio", self.frame_1.get_allpackets()
         
-        '''print self.t_beguin_capture.is_alive()
+        print self.t_beguin_capture.is_alive()
         
         #print "Mostrar esta merda", self.sData.get_allpackets()
         self.t_beguin_capture.terminate()
@@ -511,7 +523,7 @@ class SniffImap(object):
         
         
         #self.t_begin_Filed.join()
-        '''
+        
         print "captra com premissao para parar"
         pass
     
