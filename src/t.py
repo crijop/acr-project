@@ -114,7 +114,7 @@ class SniffImap(object):
         return interface
         pass
     
-    def startCapture(self, listUnrefinedPackets):
+    def startCapture(self, listUnrefinedPackets, interface):
         #interface = self.interfaceRede()
         '''
         for d in  interface:
@@ -123,14 +123,14 @@ class SniffImap(object):
         '''
         self.frame_1.clearAllCaptures()
         
-       
+        
         
         #self.t_begin_Filed.join()
         '''
         Arranjar maneira de passar o valor da interface que o utilizador devolver para 
         meter na variavel interface....
         '''
-        interface = "eth0"
+        #interface = "eth0"
         
         print "vou começar a escutar a rede"
         self.pcap = open_live(interface , 65536 , 1 , 0)
@@ -157,7 +157,8 @@ class SniffImap(object):
             #self.t_begin_analise.join()
             #print "Thread Criada", i
             
-            listUnrefinedPackets.append(packet)
+            floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
+            listUnrefinedPackets.append([floatTime, packet])
             
             
             i +=1
@@ -200,7 +201,7 @@ class SniffImap(object):
         self.frame_1.field_List_ctrl(self.listaPacotes)
         pass
     
-    def anasilePacoteNewCaptura(self, i, packet):
+    def anasilePacoteNewCaptura(self, i, epockTime, packet, listFinalPackets):
         #################################################
         #ETHERNET HEADER  
         eth_length = 14
@@ -266,16 +267,16 @@ class SniffImap(object):
         tcp = Tcp(str(srcPort), str(dstPort), str(sequenceNumber), str(acknowledgement), str(tcpHeaderLength), flagsTcp, wSizeValue, checksun)
         
         #Pacote
-        p = Packet("", str(eth_protocol), "", ethernet, ip, tcp, "IMAP")
+        p = Packet(i, str(eth_protocol), epockTime, ethernet, ip, tcp, "IMAP")
         
         
-        self.listaPacotes.append(p)
+        listFinalPackets.append(p)
         #print "meter na interface"
-        self.frame_1.field_lineOfList_ctrl(i, p)
+        
         pass
     
     
-    def filedRows_ofList(self, listUnrefinedPackets):
+    def filedRows_ofList(self, listUnrefinedPackets, listFinalPackets):
         
         print "Time para preparar para imprimir"
         position = 0
@@ -289,10 +290,12 @@ class SniffImap(object):
             #print len_of_unrefined_ListPackets
             if len_of_unrefined_ListPackets > position:
                 #print "Mostrar"
-                self.t_begin_showInInterface = Process(target=self.anasilePacoteNewCaptura, args=(position, listUnrefinedPackets[position]))
+                self.t_begin_showInInterface = Process(target=self.anasilePacoteNewCaptura, args=(position,listUnrefinedPackets[position][0], listUnrefinedPackets[position][1], listFinalPackets))
                 self.jobs.append(self.t_begin_showInInterface)
                 self.t_begin_showInInterface.start()
                 self.t_begin_showInInterface.join()
+                
+                
                 
                 position += 1
             else:
@@ -453,9 +456,9 @@ class SniffImap(object):
             
     def selectPacketEvent(self, event):
         currentItem = event.m_itemIndex
+        #print currentItem
         
-        
-        self.frame_1.makeTree(self.listaPacotes[int(currentItem)])
+        self.frame_1.makeTree(self.listaFinalPacotes[int(currentItem)])
         
         pass
     
@@ -478,24 +481,27 @@ class SniffImap(object):
     def newCapturaEvent(self, event):
         print "Começar nova Captura"
         self.__testeeeee = 5
-        
-        manager = Manager()
-        
-        self.l = manager.list()
-        
-        self.t_beguin_capture = Process(target=self.startCapture, args=(self.l,))
-        self.jobs.append(self.t_beguin_capture)
-        #self.t_beguin_capture.daemon = True
-        self.t_beguin_capture.start()
-        
-        
-        self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,))
-        self.jobs.append(self.t_begin_Filed)
-        self.t_begin_Filed.start()
+        if self.frame_1.onLive(self.interfaceRede()) != None:
+            manager = Manager()
+            
+            self.l = manager.list()
+            self.listaFinalPacotes = manager.list()
+            
+            self.t_beguin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced()))
+            self.jobs.append(self.t_beguin_capture)
+            #self.t_beguin_capture.daemon = True
+            self.t_beguin_capture.start()
+            
+            
+            self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaFinalPacotes, ))
+            self.jobs.append(self.t_begin_Filed)
+            self.t_begin_Filed.start()
+        else:
+            #não faz nada
         
         #self.t_beguin_capture.join()
     
-        pass
+            pass
     
     def stopCaturaEvent(self, event):
         
@@ -504,7 +510,14 @@ class SniffImap(object):
         #self.pcap = None
         
         #print self.cacete
-        print self.l
+        i = 0
+        for packet in self.listaFinalPacotes:
+            
+            #print packet.get_nr()
+            self.frame_1.field_lineOfList_ctrl(i,  packet)
+            #i += 1
+            pass
+        
         print self.__testeeeee
         self.__testeeeee = 10
         print self.__testeeeee

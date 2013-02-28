@@ -11,6 +11,83 @@ from t import *
 # begin wxGlade: extracode
 # end wxGlade
 
+class MyDialog(wx.Dialog):
+    def __init__(self, listInterfaces, *args, **kwds):
+        # begin wxGlade: MyDialog.__init__
+        kwds["style"] = wx.DEFAULT_DIALOG_STYLE
+        wx.Dialog.__init__(self, *args, **kwds)
+        self.lableTitle = wx.StaticText(self, -1, "Escolha a interface que quer escutar:")
+        self.toReturn = None
+        self.listInterfaces = listInterfaces
+        self.listRadioButtons = []
+        
+        self.button_1 = wx.Button(self, -1, "Cancelar")
+        self.button_2 = wx.Button(self, -1, "OK")
+        
+        self.Bind(wx.EVT_BUTTON,self.onClose_Cancel, self.button_1)
+        self.Bind(wx.EVT_BUTTON,self.getInterfaceChoiced, self.button_2)
+        
+        
+        self.__set_properties()
+        self.__do_layout()
+        # end wxGlade
+  
+    def onClose_Cancel(self, event):
+        self.toReturn = None
+        self.Destroy()
+        pass
+    
+     
+    
+    def getInterfaceChoiced(self, event):
+        pos = 0
+        
+        for radio in self.listRadioButtons:
+            if radio.GetValue() == True:
+                pos = self.listRadioButtons.index(radio)
+                self.toReturn = self.listInterfaces[pos]
+                pass
+            pass
+        
+        self.Destroy()
+            
+    def getValue(self):
+        
+        return self.toReturn
+        
+    pass
+    def __set_properties(self):
+        # begin wxGlade: MyDialog.__set_properties
+        self.SetTitle("dialog_1")
+        self.SetSize((400, 300))
+        self.lableTitle.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
+        # end wxGlade
+
+    def __do_layout(self):
+        # begin wxGlade: MyDialog.__do_layout
+        sizer_1 = wx.BoxSizer(wx.VERTICAL)
+        sizer_2 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_1.Add(self.lableTitle, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+        
+        for interface in self.listInterfaces:
+            self.radio_btn_1 = wx.RadioButton(self, -1, str(interface))
+            self.listRadioButtons.append(self.radio_btn_1)
+            sizer_1.Add(self.radio_btn_1, 0, 0, 0)
+        
+        
+        
+        sizer_2.Add(self.button_1, 0, wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL, 0)
+        sizer_2.Add(self.button_2, 0, wx.ALIGN_BOTTOM | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 0)
+        sizer_1.Add(sizer_2, 1, wx.EXPAND, 0)
+        self.SetSizer(sizer_1)
+        self.Layout()
+        # end wxGlade
+        
+        
+        
+        
+
+# end of class MyDialog
 
 class MainMenu(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -18,7 +95,7 @@ class MainMenu(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         
-        
+        self.interface = None
         
         # Menu Bar
         self.frame_1_menubar = wx.MenuBar()
@@ -61,6 +138,7 @@ class MainMenu(wx.Frame):
         self.pakets = []
         
         self.sniff_controller = SniffImap(self)
+        self.buffer_Lable.SetLabel("To a espera")
         
     def add_packet(self, packet):
         
@@ -128,13 +206,40 @@ class MainMenu(wx.Frame):
         self.Layout()
         # end wxGlade
 
-    def field_lineOfList_ctrl(self, countPackeg, item):
-        print "To na linha", countPackeg
-        self.list_ctrl.InsertStringItem(0 - 1, str(countPackeg))   
-        self.list_ctrl.SetStringItem(1 - 1, 1, "testes")
+    def field_lineOfList_ctrl(self, i,  item):
+        #print "To na linha"
         
-        print "Cheguei no fim"
+        index = self.list_ctrl.InsertStringItem(sys.maxint, str(item.get_nr()))
+        self.list_ctrl.SetStringItem(index, 1, str(item.get_time()))
+        self.list_ctrl.SetStringItem(index, 2, item.get_protocolo())
+       
+        self.list_ctrl.SetStringItem(index, 3, str(item.get_clEthernet().get_macSrc()))
+        self.list_ctrl.SetStringItem(index, 4, str(item.get_clEthernet()))
+        self.list_ctrl.SetStringItem(index, 5, str(item.get_clEthernet()))
         
+        
+        
+        #self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
+        #self.list_ctrl.SetStringItem(count, 5, item.get_clTcp())
+        #self.list_ctrl.SetStringItem(count, 6, item.get_cImap())
+        
+        if index % 2:
+            self.list_ctrl.SetItemBackgroundColour(index, "white")
+        else:
+            self.list_ctrl.SetItemBackgroundColour(index, "#9ce9ef")
+        #index += 1
+
+        self.list_ctrl.UpdateWindowUI()
+        self.Show()
+            
+        
+        #self.buffer_Lable.SetLabel("Teste" + str(item.get_nr()))
+        #self.buffer_Lable.Update()
+       
+        
+                                     
+        #print "Cheguei no fim"
+        #self.Update()
         #self.list_ctrl.Update()
         #self.sizer_8.Show()
         #self.list_ctrl.UpdateWindowUI()
@@ -237,6 +342,7 @@ class MainMenu(wx.Frame):
     '''    
     def makeTree(self, packetInfo):
         
+       
         self.tree_ctrl.DeleteAllItems()
         root = self.tree_ctrl.AddRoot('Root')
 
@@ -245,7 +351,7 @@ class MainMenu(wx.Frame):
         
         self.tree_ctrl.AppendItem(packet, 'Numero do Pacote: ' + str(packetInfo.get_nr()), -1,-1, None)
         self.tree_ctrl.AppendItem(packet, 'Tamanho do Pacote: ' + str(packetInfo.get_nr()), -1,-1, None)
-        self.tree_ctrl.AppendItem(packet, 'Chegada do Pacote: ' + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(packetInfo.get_time()))), -1,-1, None)
+        self.tree_ctrl.AppendItem(packet, 'Chegada do Pacote: ' + str(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(packetInfo.get_time())))), -1,-1, None)
         
         ethernet = self.tree_ctrl.AppendItem(root, 'Ethernet', -1,-1, None)
         
@@ -300,6 +406,29 @@ class MainMenu(wx.Frame):
         self.Show()
         pass
     
+    def onLive(self, listInterfaces):
+        
+        self.selectInterface = MyDialog(listInterfaces, None, -1, "")
+        #self.selectInterface.__do_layout(listInterfaces)
+        self.selectInterface.ShowModal()
+        self.selectInterface.Destroy()
+        
+        self.interface= self.selectInterface.getValue()
+        if(self.interface == None):
+            
+            self.frame_1_statusbar.SetStatusText("Concluido ")
+        else:
+            self.frame_1_statusbar.SetStatusText("A Capturar . . . ")
+            pass
+        self.Show()
+        
+        return self.interface
+        pass
+    
+    def get_interfaceChoiced(self):
+        
+        return self.interface
+    pass
     def forceExit(self):
         
         self.Destroy()
