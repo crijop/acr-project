@@ -1,11 +1,11 @@
 #-*- coding:utf-8 -*-
 #!/usr/bin/python
 
+
 from Ethernet import *
 from Ip import *
 from Packet import *
 from Tcp import *
-from data import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from pcapy import *
@@ -18,6 +18,9 @@ import socket
 import sys
 import time
 import wx
+
+
+
 
 
 
@@ -41,6 +44,7 @@ class bcolors:
         self.ENDC = ''
         pass
     pass
+
 
 class SniffImap(object):
     
@@ -440,6 +444,8 @@ class SniffImap(object):
         
         #Pacote
         p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, "IMAP")
+
+
 
 
         self.listaPacotes.append(p)
