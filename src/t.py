@@ -185,7 +185,8 @@ class SniffImap(object):
     
     
     def startCaptureSaved(self, caminhoFile):
-        pcap = open_offline(caminhoFile)
+        
+        pcap = open_offline(caminhoFile.encode('utf-8'))
         i = 1
         
         pcap.setfilter("tcp port 143 or tcp port 993")
@@ -464,7 +465,7 @@ class SniffImap(object):
         currentItem = event.m_itemIndex
         #print currentItem
         
-        self.frame_1.makeTree(self.listaFinalPacotes[int(currentItem)])
+        self.frame_1.makeTree(self.listaPacotes[int(currentItem)])
         
         pass
     
@@ -491,7 +492,7 @@ class SniffImap(object):
             manager = Manager()
             
             self.l = manager.list()
-            self.listaFinalPacotes = manager.list()
+            self.listaPacotes = manager.list()
             
             self.t_beguin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced()))
             self.jobs.append(self.t_beguin_capture)
@@ -499,7 +500,7 @@ class SniffImap(object):
             self.t_beguin_capture.start()
             
             
-            self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaFinalPacotes, ))
+            self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaPacotes, ))
             self.jobs.append(self.t_begin_Filed)
             self.t_begin_Filed.start()
         else:
