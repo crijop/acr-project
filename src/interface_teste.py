@@ -410,8 +410,8 @@ class MainMenu(wx.Frame):
         
         imap = self.tree_ctrl.AppendItem(root, 'Protocolo de Acesso a Mensagens de Internet (IMAP)', -1,-1, None)
         imapInfo = packetInfo.get_cImap()
-        self.tree_ctrl.AppendItem(imap, 'Porta de Origem: ' + str(imapInfo), -1,-1, None)
-        
+        t = self.tree_ctrl.AppendItem(imap, 'buffer: ' + str(imapInfo.get_buffer_Imap()), -1,-1, None)
+    
         self.tree_ctrl.Expand(packet)
       
         self.tree_ctrl.UpdateWindowUI()

@@ -6,13 +6,14 @@ from Ethernet import *
 from Ip import *
 from Packet import *
 from Tcp import *
+from Imap import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
+from multiprocessing import *
 from pcapy import *
 from struct import *
 from threading import Thread
 import datetime
-from multiprocessing import *
 import os
 import socket
 import sys
@@ -431,7 +432,14 @@ class SniffImap(object):
         
         #################################################
         #Protocolo IMAP HEADER
-        
+        imap_header = packet[54:]
+        #=======================================================================
+        # 
+        # ethernet = 0 - 14
+        # ip = 14 - 34
+        # tcp = 34 - 54
+        # imap = 54 - buffer 
+        #=======================================================================
         #################################################
         
         #Protocolo Ethernet
@@ -443,8 +451,14 @@ class SniffImap(object):
         #Protocolo TCP
         tcp = Tcp(str(srcPort), str(dstPort), str(sequenceNumber), str(acknowledgement), str(tcpHeaderLength), flagsTcp, wSizeValue, checksun)
         
+        #Protocolo IMAP
+        imap = Imap(str(imap_header.encode("hex")))
+        
+        #i =  int(imap_header.encode("hex"), 16)
+        #print str(imap_header.encode("hex"))
+        #print imap_header.encode("hex")      
         #Pacote
-        p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, "IMAP")
+        p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, imap)
 
 
 
