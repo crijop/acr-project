@@ -836,7 +836,7 @@ class SniffImap(object):
         
         
         if(self.filter == 1):
-            if wx.MessageBox("Deseja desactivar o filtro?\n\nO filtro desactivo permite ver\ntodos os pacotes da rede\ncontudo podem surgir alguns erros de visualização\npois o porgrama esta apenas preparado para\npacotes IMAP\n\nA ALTERAÇÃO AO FILTRO APENAS SURTIRÁ EFEITO NA PRÓXIMA CAPTURA", "Confirmar", wx.YES_NO | wx.ICON_EXCLAMATION) == wx.YES :
+            if wx.MessageBox("Deseja desactivar o filtro?\n\nO filtro desactivo permite ver\ntodos os pacotes da rede\ncontudo podem surgir alguns erros de visualização\npois o programa esta apenas preparado para\npacotes IMAP\n\nA ALTERAÇÃO AO FILTRO APENAS SURTIRÁ EFEITO NA PRÓXIMA CAPTURA", "Confirmar", wx.YES_NO | wx.ICON_EXCLAMATION) == wx.YES :
                 self.filter = 0
                 self.frame_1.changeTitle("Filtro IMAP Desactivo")
             else:

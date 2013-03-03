@@ -15,7 +15,7 @@ class AboutDialog(wx.Dialog):
         wx.Dialog.__init__(self, *args, **kwds)
         self.label_1 = wx.StaticText(self, -1, "Acerca")
         self.static_line_1 = wx.StaticLine(self, -1)
-        self.label_2 = wx.StaticText(self, -1, u"O SniffImap é um programa que captura e analisa pacotes IMAP e IMAPs que circulam numa rede. Este programa foi desenvolvido no ambito da disciplina de Analise de Comunicações em Redes, do Mestrado em Engenharia de Segurança Informática. \n\nEste Programa fou desenvolvido por:\n\nAntónio Baião Nº 5604\nCarlos Palma Nº 5608\nDuarte Pereira Nº\n\nEscola Superior de Tecnologia e Gestão de Beja, Fevereiro , 2013")
+        self.label_2 = wx.StaticText(self, -1, u"O SniffImap é um programa que captura e analisa pacotes IMAP e IMAPs que circulam numa rede. Este programa foi desenvolvido no ambito da disciplina de Analise de Comunicações em Redes, do Mestrado em Engenharia de Segurança Informática. \n\nEste Programa fou desenvolvido por:\n\nAntónio Baião Nº 5604\nCarlos Palma Nº 5608\nDuarte Pereira Nº13215\n\nEscola Superior de Tecnologia e Gestão de Beja, Fevereiro , 2013")
         self.label_2.Wrap(400)
         self.panel_3 = wx.Panel(self, -1)
         self.button_1 = wx.Button(self, wx.ID_OK)
