@@ -15,6 +15,81 @@ import wx.lib.agw.pyprogress as PP
 # begin wxGlade: extracode
 # end wxGlade
 
+class CaptureDialog(wx.Dialog):
+    def __init__(self, eventStop, interface, *args, **kwds):
+        # begin wxGlade: CaptureDialog.__init__
+        kwds["style"] = wx.DEFAULT_DIALOG_STYLE
+        wx.Dialog.__init__(self, *args, **kwds)
+        self.incialTime = time.time()
+        #print self.incialTime
+        self.timer = wx.Timer(self, 1)
+        self.Bind(wx.EVT_TIMER, self.OnTimer, self.timer)
+        
+        self.panel_1 = wx.Panel(self, -1)
+        self.label_1 = wx.StaticText(self, -1, "A capturar na " + str(interface))
+        self.gauge_1 = wx.Gauge(self, -1, 10, style=wx.GA_HORIZONTAL | wx.GA_SMOOTH)
+        self.label_3 = wx.StaticText(self, -1, str(time.strftime('%H:%M:%S', time.localtime(time.time()))))
+        #self.label_4 = wx.StaticText(self, -1, "Pacotes")
+        self.panel_3 = wx.Panel(self, -1)
+        self.panel_4 = wx.Panel(self, -1)
+        self.button_2 = wx.Button(self, wx.ID_STOP)
+        self.panel_5 = wx.Panel(self, -1)
+
+        self.__set_properties()
+        self.__do_layout()
+        
+        self.Bind(wx.EVT_BUTTON,eventStop, self.button_2)
+        self.timer.Start(100)
+        # end wxGlade
+
+    def __set_properties(self):
+        # begin wxGlade: CaptureDialog.__set_properties
+        self.SetTitle("dialog_1")
+        self.SetSize((400, 300))
+        self.label_1.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
+        self.gauge_1.SetMinSize((300, 28))
+        # end wxGlade
+
+    def __do_layout(self):
+        # begin wxGlade: CaptureDialog.__do_layout
+        sizer_1 = wx.BoxSizer(wx.VERTICAL)
+        sizer_2 = wx.BoxSizer(wx.VERTICAL)
+        sizer_3 = wx.BoxSizer(wx.VERTICAL)
+        sizer_4 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_5 = wx.BoxSizer(wx.VERTICAL)
+        sizer_1.Add(self.panel_1, 1, wx.EXPAND, 0)
+        sizer_1.Add(self.label_1, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+        sizer_1.Add(self.gauge_1, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+        sizer_5.Add(self.label_3, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+        #sizer_5.Add(self.label_4, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
+        sizer_2.Add(sizer_5, 1, wx.EXPAND, 0)
+        sizer_3.Add(self.panel_3, 1, wx.EXPAND, 0)
+        sizer_4.Add(self.panel_4, 1, wx.EXPAND, 0)
+        sizer_4.Add(self.button_2, 0, 0, 0)
+        sizer_4.Add(self.panel_5, 1, wx.EXPAND, 0)
+        sizer_3.Add(sizer_4, 1, wx.EXPAND, 0)
+        sizer_2.Add(sizer_3, 1, wx.EXPAND, 0)
+        sizer_1.Add(sizer_2, 1, wx.EXPAND, 0)
+        self.SetSizer(sizer_1)
+        self.Layout()
+        # end wxGlade
+
+    def OnTimer(self, event):
+        
+        #self.gauge.SetValue(self.count)
+        self.gauge_1.Pulse()
+        timeToPrint = time.time() - self.incialTime
+        self.label_3.SetLabel(str(time.strftime('%M:%S', time.localtime(timeToPrint))))
+        #print timeToPrint
+        self.label_3.Update()
+    
+        #if self.count == 50:
+            #self.timer.Stop()
+            #self.text.SetLabel("Task Completed")
+# end of class CaptureDialog
+
+        pass
+   
 
 class MyDialog(wx.Dialog):
     def __init__(self, listInterfaces, *args, **kwds):
@@ -110,12 +185,13 @@ class MainMenu(wx.Frame):
         wxglade_tmp_menu = wx.Menu()
         self.newCaptura = wxglade_tmp_menu.Append(wx.NewId(), "Nova Captura", "", wx.ITEM_NORMAL)
         self.openCapture = wxglade_tmp_menu.Append(wx.NewId(), "Abrir Captura", "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura", "", wx.ITEM_NORMAL)
-        wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura Como...", "", wx.ITEM_NORMAL)
+        self.saveCapture = wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura", "", wx.ITEM_NORMAL)
+        #wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura Como...", "", wx.ITEM_NORMAL)
         self.sair = wxglade_tmp_menu.Append(wx.NewId(), "Sair", "", wx.ITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Ficheiro")
         wxglade_tmp_menu = wx.Menu()
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Estastisticas")
+        self.statistics = wxglade_tmp_menu.Append(wx.NewId(), "Sumário Global", "", wx.ITEM_NORMAL)
         self.SetMenuBar(self.frame_1_menubar)
         
         capturaMenu = wx.Menu()
@@ -305,10 +381,21 @@ class MainMenu(wx.Frame):
         self.Bind(wx.EVT_MENU, event, self.openCapture)
         
         pass
+    
+    def saveFileEvent(self, event):
+        
+        self.Bind(wx.EVT_MENU, event, self.saveCapture)
+        
+        pass
     def packetList_Selected_event(self, event):
         
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, event, self.list_ctrl)
         
+        pass
+    
+    def statistics_event(self, event):
+    
+        self.Bind(wx.EVT_MENU, event, self.statistics)
         pass
     
     def newCaptura_event(self, event):
@@ -322,7 +409,8 @@ class MainMenu(wx.Frame):
         pass
     
     def stopCaptura_event(self, event):
-        self.Bind(wx.EVT_MENU, event, self.stopCaptura)
+        
+        self.event = event
         
         pass
     
@@ -347,6 +435,23 @@ class MainMenu(wx.Frame):
         dlg.Destroy()
         
         return filePath
+    
+    def onSaveFile(self):
+        self.currentDirectory = os.getcwd()
+        filePath = None
+        
+        dlg = wx.FileDialog(
+            self, message="Save file as ...", 
+            defaultDir=self.currentDirectory, 
+            defaultFile="", wildcard="*.pcap", style=wx.SAVE
+            )
+        if dlg.ShowModal() == wx.ID_OK:
+            filePath = dlg.GetPath()
+            print "You chose the following filename: %s" % filePath
+        dlg.Destroy()
+        
+        return filePath
+        pass
     
     def clearAllCaptures(self):
         self.list_ctrl.DeleteAllItems()
@@ -394,7 +499,7 @@ class MainMenu(wx.Frame):
         self.tree_ctrl.AppendItem(ip, 'IP de Destino: ' + str(ipInfo.get_ipDst()), -1,-1, None)
         self.tree_ctrl.AppendItem(ip, 'IP de Origem: ' + str(ipInfo.get_ipSrc()), -1,-1, None)
         
-        tcp = self.tree_ctrl.AppendItem(root, 'Protocolo de Controlo de Tramisão (TCP)', -1,-1, None)
+        tcp = self.tree_ctrl.AppendItem(root, 'Protocolo de Controlo de Transmissão (TCP)', -1,-1, None)
         tcpInfo = packetInfo.get_clTcp()
         
         self.tree_ctrl.AppendItem(tcp, 'Porta de Origem: ' + str(tcpInfo.get_srcPort()), -1,-1, None)
@@ -457,7 +562,7 @@ class MainMenu(wx.Frame):
             self.frame_1_statusbar.SetStatusText("Concluido ")
         else:
             self.frame_1_statusbar.SetStatusText("A Capturar . . . ")
-            style = wx.PD_APP_MODAL|wx.PD_ELAPSED_TIME|wx.PD_CAN_ABORT
+            '''style = wx.PD_APP_MODAL|wx.PD_ELAPSED_TIME|wx.PD_CAN_ABORT
             dlg = PP.PyProgress(None, -1, "A Capturar . . .",
                             "A capturar pacotes na " + str(self.interface),                            
                             style)
@@ -476,7 +581,7 @@ class MainMenu(wx.Frame):
             wx.SafeYield()
             wx.GetApp().GetTopWindow().Raise()
             
-            print "AQUIII"
+            print "AQUIII"'''
         self.Show()
         
         return self.interface
