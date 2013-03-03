@@ -46,7 +46,7 @@ class CaptureDialog(wx.Dialog):
 
     def __set_properties(self):
         # begin wxGlade: CaptureDialog.__set_properties
-        self.SetTitle("dialog_1")
+        self.SetTitle("A Capturar...")
         self.SetSize((400, 300))
         self.label_1.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
         self.gauge_1.SetMinSize((300, 28))
@@ -185,15 +185,24 @@ class MainMenu(wx.Frame):
         # Menu Bar
         self.frame_1_menubar = wx.MenuBar()
         wxglade_tmp_menu = wx.Menu()
-        self.newCaptura = wxglade_tmp_menu.Append(wx.NewId(), "Nova Captura", "", wx.ITEM_NORMAL)
-        self.openCapture = wxglade_tmp_menu.Append(wx.NewId(), "Abrir Captura", "", wx.ITEM_NORMAL)
-        self.saveCapture = wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura", "", wx.ITEM_NORMAL)
+        self.newCaptura = wxglade_tmp_menu.Append(wx.ID_NEW, "Nova Captura", "", wx.ITEM_NORMAL)
+        self.openCapture = wxglade_tmp_menu.Append(wx.ID_OPEN, "Abrir Captura", "", wx.ITEM_NORMAL)
+        self.saveCapture = wxglade_tmp_menu.Append(wx.ID_SAVE, "Guardar Captura", "", wx.ITEM_NORMAL)
         #wxglade_tmp_menu.Append(wx.NewId(), "Guardar Captura Como...", "", wx.ITEM_NORMAL)
-        self.sair = wxglade_tmp_menu.Append(wx.NewId(), "Sair", "", wx.ITEM_NORMAL)
+        self.sair = wxglade_tmp_menu.Append(wx.ID_EXIT, "Sair", "", wx.ITEM_NORMAL)
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Ficheiro")
         wxglade_tmp_menu = wx.Menu()
         self.frame_1_menubar.Append(wxglade_tmp_menu, "Estastisticas")
-        self.statistics = wxglade_tmp_menu.Append(wx.NewId(), "Sumário Global", "", wx.ITEM_NORMAL)
+        self.statistics = wxglade_tmp_menu.Append(wx.ID_FILE, "Sumário Global", "", wx.ITEM_NORMAL)
+        
+        self.preferences = wx.Menu()
+        self.filter = self.preferences.Append(wx.NewId(), "Filtros", "" , wx.ITEM_CHECK)
+        self.filter.Check()
+        self.frame_1_menubar.Append(self.preferences, "Preferencias")
+        
+        self.help = wx.Menu()
+        self.help.Append(wx.ID_ABOUT, "Acerca", )
+        self.frame_1_menubar.Append(self.help, "Ajuda")
         self.SetMenuBar(self.frame_1_menubar)
         
         '''capturaMenu = wx.Menu()
@@ -226,7 +235,7 @@ class MainMenu(wx.Frame):
         self.pakets = []
         
         self.sniff_controller = SniffImap(self)
-        self.buffer_Lable.SetLabel("To a espera")
+        self.buffer_Lable.SetLabel("A esperar")
         
     def add_packet(self, packet):
         
@@ -254,7 +263,7 @@ class MainMenu(wx.Frame):
         self.window_3_pane_2.SetScrollRate(10, 10)
         self.frame_1_statusbar.SetStatusWidths([-1])
         # statusbar fields
-        frame_1_statusbar_fields = ["frame_1_statusbar"]
+        frame_1_statusbar_fields = ["Concluido"]
         for i in range(len(frame_1_statusbar_fields)):
             self.frame_1_statusbar.SetStatusText(frame_1_statusbar_fields[i], i)
         # end wxGlade
@@ -304,10 +313,21 @@ class MainMenu(wx.Frame):
         self.list_ctrl.SetStringItem(index, 1, str(item.get_time()))
         self.list_ctrl.SetStringItem(index, 2, str(item.get_clIp().get_ipSrc()))
         self.list_ctrl.SetStringItem(index, 3, str(item.get_clIp().get_ipDst()))
-        self.list_ctrl.SetStringItem(index, 4, str(item.get_clEthernet().get_macSrc()))
-        self.list_ctrl.SetStringItem(index, 5, str(item.get_clEthernet()))
-        self.list_ctrl.SetStringItem(index, 6, str(item.get_clEthernet()))
         
+        if str(item.get_clTcp().get_srcPort()) == "143"  or str(item.get_clTcp().get_dstPort()) == "143":
+        
+            self.list_ctrl.SetStringItem(index, 4, "IMAP")
+            
+        elif str(item.get_clTcp().get_srcPort()) == "993"  or str(item.get_clTcp().get_dstPort()) == "993":
+            
+            self.list_ctrl.SetStringItem(index, 4, "IMAPS")
+            
+            pass
+            
+        self.list_ctrl.SetStringItem(index, 5, str(item.get_length()))
+        self.list_ctrl.SetStringItem(index, 6, str(item.get_clEthernet().get_macSrc()))
+        self.list_ctrl.SetStringItem(index, 7, str(item.get_clEthernet().get_macDst()))
+    
         
         
         #self.list_ctrl.SetStringItem(count, 4, item.get_clIp())
@@ -363,7 +383,7 @@ class MainMenu(wx.Frame):
                 
                 pass
                 
-            self.list_ctrl.SetStringItem(count, 5, str(item.get_clEthernet()))
+            self.list_ctrl.SetStringItem(count, 5, str(item.get_length()))
             self.list_ctrl.SetStringItem(count, 6, str(item.get_clEthernet().get_macSrc()))
             self.list_ctrl.SetStringItem(count, 7, str(item.get_clEthernet().get_macDst()))
             
@@ -411,9 +431,19 @@ class MainMenu(wx.Frame):
         self.Bind(wx.EVT_MENU, event, self.statistics)
         pass
     
+    def about_event(self, event):
+        
+        self.Bind(wx.EVT_MENU, event, self.about)
+        pass
+    
     def newCaptura_event(self, event):
         self.Bind(wx.EVT_MENU, event, self.newCaptura)
         pass
+    
+    def filter_event(self, event):
+        self.Bind(wx.EVT_MENU, event, self.filter)
+        pass
+    
     
     def sair_event(self, event):
         

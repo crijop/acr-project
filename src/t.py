@@ -3,15 +3,16 @@
 
 
 from Ethernet import *
+from Imap import *
 from Ip import *
 from Packet import *
 from Tcp import *
-from Imap import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 from interface_teste import *
 from multiprocessing import *
 from pcapy import *
+from statisticsDialog import *
 from struct import *
 from threading import Thread
 import datetime
@@ -19,8 +20,8 @@ import os
 import socket
 import sys
 import time
-from statisticsDialog import *
 import wx
+from aboutDialog import *
 
 
 
@@ -65,6 +66,7 @@ class SniffImap(object):
         self.pcap = None
         self.__testeeeee = 0
         
+        self.filter = 1
           
         #app = wx.PySimpleApp(0)
         #wx.InitAllImageHandlers()
@@ -77,6 +79,7 @@ class SniffImap(object):
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
         self.frame_1.statistics_event(self.statisticsEvent)
         self.frame_1.sair_event(self.exitProgram)
+        self.frame_1.filter_event(self.filterEvent)
         self.frame_1.newCaptura_event(self.newCapturaEvent)
         self.frame_1.stopCaptura_event(self.stopCaturaEvent)
         
@@ -123,7 +126,7 @@ class SniffImap(object):
         return interface
         pass
     
-    def startCapture(self, listUnrefinedPackets, interface, stopCapture):
+    def startCapture(self, listUnrefinedPackets, interface, stopCapture, filter):
         #interface = self.interfaceRede()
         '''
         for d in  interface:
@@ -149,7 +152,10 @@ class SniffImap(object):
             
             i = 1
             
-            self.pcap.setfilter("tcp port 143 or tcp port 993")
+            if filter[0] == 1:
+                self.pcap.setfilter("tcp port 143 or tcp port 993")
+                print "FILTRO ACTIVO"
+                
             (header, packet) = self.pcap.next()
             while stopCapture[0] == False:
                 '''Analisar pacote'''
@@ -206,7 +212,10 @@ class SniffImap(object):
         pcap = open_offline(caminhoFile.encode('utf-8'))
         i = 1
         print "abrir ficheiro"
-        pcap.setfilter("tcp port 143 or tcp port 993")
+        if self.filter == 1:
+            pcap.setfilter("tcp port 143 or tcp port 993")
+            print "FILTRO ACTIVO"
+            
         (header, packet) = pcap.next()
         while header:
             #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
@@ -551,9 +560,13 @@ class SniffImap(object):
             self.l = manager.list()
             self.listaPacotes = manager.list()
             self.stopCapture = manager.list()
+            self.filterState = manager.list()
+            self.filterState[0] = self.filter
+            
+            
             self.stopCapture.append(False)
             
-            self.t_begin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced(), self.stopCapture))
+            self.t_begin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced(), self.stopCapture, self.filterState))
             self.jobs.append(self.t_begin_capture)
             #self.t_beguin_capture.daemon = True
             self.t_begin_capture.start()
@@ -568,11 +581,15 @@ class SniffImap(object):
             self.dialog_1.ShowModal()
             self.dialog_1.Destroy()
             
-            firstTime = self.listaPacotes[0].get_time()
+            elapsedTime = 0
         
-            lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
-        
-            elapsedTime = lastTime - firstTime
+            if len(self.listaPacotes) != 0:
+                
+                firstTime = self.listaPacotes[0].get_time()
+            
+                lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+            
+                elapsedTime = float(lastTime) - float(firstTime)
         
         
         
@@ -619,7 +636,7 @@ class SniffImap(object):
         print self.t_begin_capture.is_alive()
         
         #print self.sData.alive()
-        self.frame_1.changeStatusBarInfo(len(self.listaPacotes))
+        #self.frame_1.changeStatusBarInfo(len(self.listaPacotes))
         
         #self.t_begin_Filed.join()
         
@@ -801,6 +818,37 @@ class SniffImap(object):
                     '''
             pass
     
+    def about_event(self, event):
+        
+        self.aboutDialog = AboutDialog(None, -1, "")
+        
+        self.aboutDialog.ShowModal()
+        self.aboutDialog.Destroy()
+        
+        pass
+    
+    def filterEvent(self,event):
+        itemId = event.GetId()
+        item = event.GetEventObject()
+        menuItem = item.FindItemById(itemId)
+        
+        
+        
+        if(self.filter == 1):
+            if wx.MessageBox("Deseja desactivar o filtro?\n\nO filtro activo permite ver\ntodos os pacotes da rede\ncontudo podem surgir alguns erros de visualização\npois o porgrama esta apenas preparado para\npacotes IMAP", "Confirmar", wx.YES_NO) == wx.YES :
+                self.filter = 0
+            else:
+                menuItem.Check()
+                pass
+        else:
+            if wx.MessageBox("Filtro Activo", "Filtro Activo", wx.OK) == wx.OK:
+                
+                self.filter = 1
+                pass
+        
+        
+        #print self.filter
+        pass
         
 '''    
 if __name__ == "__main__":
