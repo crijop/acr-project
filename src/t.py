@@ -9,6 +9,7 @@ from Tcp import *
 from Imap import *
 from impacket.ImpactDecoder import EthDecoder
 from impacket.ImpactPacket import IP, TCP, UDP, ICMP
+from interface_teste import *
 from multiprocessing import *
 from pcapy import *
 from struct import *
@@ -18,6 +19,7 @@ import os
 import socket
 import sys
 import time
+from statisticsDialog import *
 import wx
 
 
@@ -71,7 +73,9 @@ class SniffImap(object):
         #self.frame_1.Show()
         self.frame_1.printTeste()
         self.frame_1.openFileEvent(self.openCapture_file)
+        self.frame_1.saveFileEvent(self.saveCapture_event)
         self.frame_1.packetList_Selected_event(self.selectPacketEvent)
+        self.frame_1.statistics_event(self.statisticsEvent)
         self.frame_1.sair_event(self.exitProgram)
         self.frame_1.newCaptura_event(self.newCapturaEvent)
         self.frame_1.stopCaptura_event(self.stopCaturaEvent)
@@ -119,14 +123,14 @@ class SniffImap(object):
         return interface
         pass
     
-    def startCapture(self, listUnrefinedPackets, interface):
+    def startCapture(self, listUnrefinedPackets, interface, stopCapture):
         #interface = self.interfaceRede()
         '''
         for d in  interface:
             print d
             pass        
         '''
-        self.frame_1.clearAllCaptures()
+        
         
         
         
@@ -138,47 +142,56 @@ class SniffImap(object):
         #interface = "eth0"
         
         print "vou começar a escutar a rede"
-        self.pcap = open_live(interface , 65536 , 1 , 0)
-        tIncial = int(round(time.time() * 20000))
-        
-        i = 1
-        
-        #pcap.setfilter("tcp port 143 or tcp port 993")
-        (header, packet) = self.pcap.next()
-        while header:
-            '''Analisar pacote'''
+        try:
+            self.pcap = open_live(interface , 65536 , 1 , 10000)
+            dumper = self.pcap.dump_open("temp.pcap")
+            tIncial = int(round(time.time() * 20000))
             
+            i = 1
             
-            #self.__testeeeee += 1
-            #print self.__testeeeee
-            #self.frame_1.add_packet(packet)
-            #print len(self.frame_1.get_allpackets())
-            #print self.pcap
-            #print "fiz append", len(self.unrefined_packets)
-            #print "Vou Criar a Thread ", i
-            
-            #self.t_begin_analise = multiprocessing.Process(target=self.anasilePacoteNewCaptura, args=(i, packet))
-            #self.t_begin_analise.start()
-            #self.t_begin_analise.join()
-            #print "Thread Criada", i
-            
-            floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
-            listUnrefinedPackets.append([floatTime, packet])
-            
-            
-            i +=1
+            self.pcap.setfilter("tcp port 143 or tcp port 993")
             (header, packet) = self.pcap.next()
-            tfinal = int(round(time.time() * 1000))
-            #print self.sData.get_stopCapture_State()
-            if tfinal - tIncial >= 20000:
-                print "Vou terminar"
-                self.frame_1.forceExit()
-                self.exit(0)
+            while stopCapture[0] == False:
+                '''Analisar pacote'''
+                
+                
+                #self.__testeeeee += 1
+                #print self.__testeeeee
+                #self.frame_1.add_packet(packet)
+                #print len(self.frame_1.get_allpackets())
+                #print self.pcap
+                #print "fiz append", len(self.unrefined_packets)
+                #print "Vou Criar a Thread ", i
+                
+                #self.t_begin_analise = multiprocessing.Process(target=self.anasilePacoteNewCaptura, args=(i, packet))
+                #self.t_begin_analise.start()
+                #self.t_begin_analise.join()
+                #print "Thread Criada", i
+                #self.dialog_1.setPacket(i)
+                floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
+                #print floatTime
+                listUnrefinedPackets.append([floatTime, packet])
+                dumper.dump(header, packet)
+                
+                i +=1
+                (header, packet) = self.pcap.next()
+                tfinal = int(round(time.time() * 1000))
+                #print self.sData.get_stopCapture_State()
+                if tfinal - tIncial >= 20000:
+                    print "Vou terminar"
+                    self.frame_1.forceExit()
+                    self.exit(0)
+                    pass
+                
+                
                 pass
+            print "Acabei de escutar"
+        except Exception:
+            
+            print "excedeu o tempo e não ouve pacotes"
             
             
-            pass
-        print "Acabei de escutar"
+        
         
         
         #pcap.loop(0, self.callback)
@@ -186,30 +199,47 @@ class SniffImap(object):
     
     
     def startCaptureSaved(self, caminhoFile):
+        print caminhoFile
         
+        self.frame_1.clearAllCaptures()
+        self.listaPacotes = []
         pcap = open_offline(caminhoFile.encode('utf-8'))
         i = 1
-        
+        print "abrir ficheiro"
         pcap.setfilter("tcp port 143 or tcp port 993")
         (header, packet) = pcap.next()
         while header:
             #print ('%d -> %s: captured %d bytes, truncated to %d bytes'
             #%(i, datetime.datetime.now(), header.getlen(), header.getcaplen()))
             floatTime = str(header.getts()[0]) + "." + str(header.getts()[1])
-            
+            #print floatTime
             #print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(floatTime)))  
             self.analisePacote(i, packet, float(floatTime))
             #print lista
             #header.getlen() tamanho packert
             i +=1
             (header, packet) = pcap.next()
-        self.frame_1.changeStatusBarInfo(i - 1)
+        
+        elapsedTime = 0
+        
+        if len(self.listaPacotes) != 0:
+            firstTime = self.listaPacotes[0].get_time()
+        
+            lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+        
+            elapsedTime = lastTime - firstTime
+        
+        
+        
+        self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
+        
         self.frame_1.field_List_ctrl(self.listaPacotes)
         pass
     
     def anasilePacoteNewCaptura(self, i, epockTime, packet, listFinalPackets):
         #################################################
         #ETHERNET HEADER  
+     
         eth_length = 14
         eth_header = packet[:eth_length]
         eth = unpack('!6s6sH' , eth_header)
@@ -273,7 +303,8 @@ class SniffImap(object):
         tcp = Tcp(str(srcPort), str(dstPort), str(sequenceNumber), str(acknowledgement), str(tcpHeaderLength), flagsTcp, wSizeValue, checksun)
         
         #Pacote
-        p = Packet(i, str(eth_protocol), epockTime, ethernet, ip, tcp, "IMAP")
+        p = Packet(len(packet), i, str(eth_protocol), epockTime, ethernet, ip, tcp, "IMAP")
+        
         
         
         listFinalPackets.append(p)
@@ -285,7 +316,7 @@ class SniffImap(object):
     def filedRows_ofList(self, listUnrefinedPackets, listFinalPackets):
         
         print "Time para preparar para imprimir"
-        position = 0
+        position = 1
         
         while True:
             
@@ -296,6 +327,7 @@ class SniffImap(object):
             #print len_of_unrefined_ListPackets
             if len_of_unrefined_ListPackets > position:
                 #print "Mostrar"
+                
                 self.t_begin_showInInterface = Process(target=self.anasilePacoteNewCaptura, args=(position,listUnrefinedPackets[position][0], listUnrefinedPackets[position][1], listFinalPackets))
                 self.jobs.append(self.t_begin_showInInterface)
                 self.t_begin_showInInterface.start()
@@ -381,7 +413,9 @@ class SniffImap(object):
     def analisePacote(self,nr, packet, epoch_time):
         
         #################################################
-        #ETHERNET HEADER  
+        #ETHERNET HEADER 
+        #print len(packet)
+         
         eth_length = 14
         eth_header = packet[:eth_length]
         eth = unpack('!6s6sH' , eth_header)
@@ -458,22 +492,26 @@ class SniffImap(object):
         #print str(imap_header.encode("hex"))
         #print imap_header.encode("hex")      
         #Pacote
-        p = Packet(nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, imap)
+
+        p = Packet(len(packet), nr, str(eth_protocol), epoch_time, ethernet, ip, tcp, imap)
+
 
 
 
 
         self.listaPacotes.append(p)
+        
+        
         pass
     '''
     evento abrir captura a partir do ficheiro
     '''
     def openCapture_file(self, event):
         
-        path = self.frame_1.onOpenFile()
-        if path != None:
+        self.path = self.frame_1.onOpenFile()
+        if self.path != None:
             self.frame_1.clearAllCaptures()
-            self.startCaptureSaved(path)
+            self.startCaptureSaved(self.path)
             
     def selectPacketEvent(self, event):
         currentItem = event.m_itemIndex
@@ -493,6 +531,10 @@ class SniffImap(object):
                 p.terminate()
                 p.join()
             
+            if os.path.isfile("temp.pcap") == True:
+                
+                os.remove("temp.pcap")
+            
             self.frame_1.Destroy()
             sys.exit(0)
             
@@ -503,24 +545,42 @@ class SniffImap(object):
         print "Começar nova Captura"
         self.__testeeeee = 5
         if self.frame_1.onLive(self.interfaceRede()) != None:
+            self.frame_1.clearAllCaptures()
             manager = Manager()
             
             self.l = manager.list()
             self.listaPacotes = manager.list()
+            self.stopCapture = manager.list()
+            self.stopCapture.append(False)
             
-            self.t_beguin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced()))
-            self.jobs.append(self.t_beguin_capture)
+            self.t_begin_capture = Process(target=self.startCapture, args=(self.l, self.frame_1.get_interfaceChoiced(), self.stopCapture))
+            self.jobs.append(self.t_begin_capture)
             #self.t_beguin_capture.daemon = True
-            self.t_beguin_capture.start()
+            self.t_begin_capture.start()
             
             
             self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaPacotes, ))
             self.jobs.append(self.t_begin_Filed)
             self.t_begin_Filed.start()
+            
+            self.dialog_1 = CaptureDialog(self.stopCaturaEvent, self.frame_1.get_interfaceChoiced(), None, -1, "")
+            
+            self.dialog_1.ShowModal()
+            self.dialog_1.Destroy()
+            
+            firstTime = self.listaPacotes[0].get_time()
+        
+            lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+        
+            elapsedTime = lastTime - firstTime
+        
+        
+        
+            self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
         else:
             #não faz nada
         
-        #self.t_beguin_capture.join()
+            #self.t_beguin_capture.join()
     
             pass
     
@@ -531,35 +591,215 @@ class SniffImap(object):
         #self.pcap = None
         
         #print self.cacete
+        self.dialog_1.Destroy()
+        #wx.SafeYield()
+        
         i = 0
-        for packet in self.listaFinalPacotes:
+        for packet in self.listaPacotes:
             
             #print packet.get_nr()
+            #print packet
             self.frame_1.field_lineOfList_ctrl(i,  packet)
             #i += 1
             pass
         
-        print self.__testeeeee
-        self.__testeeeee = 10
-        print self.__testeeeee
+        #print self.__testeeeee
+        #self.__testeeeee = 10
+        #print self.__testeeeee
         
-        print "ta cheio", self.frame_1.get_allpackets()
+        #print "ta cheio", self.frame_1.get_allpackets()
         
-        print self.t_beguin_capture.is_alive()
+        print self.t_begin_capture.is_alive()
         
         #print "Mostrar esta merda", self.sData.get_allpackets()
-        self.t_beguin_capture.terminate()
-        self.t_beguin_capture.join()
+        #self.t_begin_capture.terminate()
+        self.stopCapture[0] = True
+        #self.t_begin_capture.join()
         
-        print self.t_beguin_capture.is_alive()
+        print self.t_begin_capture.is_alive()
         
         #print self.sData.alive()
-        
+        self.frame_1.changeStatusBarInfo(len(self.listaPacotes))
         
         #self.t_begin_Filed.join()
         
         print "captra com premissao para parar"
         pass
+    
+    def saveCapture_event(self, event):
+        
+        
+        
+        
+        if os.path.isfile("temp.pcap") == True:
+            tempFile = open("temp.pcap")
+            fileTosave = None
+            
+            
+            
+            path = self.frame_1.onSaveFile()
+            if path != None:
+                print path
+                fileTosave = open(path, 'wb')
+                
+                pass
+            
+            fileTosave.write(tempFile.read())
+        pass
+    
+    def statisticsEvent(self, event):
+        
+        
+        if len(self.listaPacotes) != 0:
+            self.statisticsDialog = Statistics(None, -1, "")
+            
+            self.sendTime(self.statisticsDialog)
+            self.sendDisplayTime(self.statisticsDialog)
+            #self.sendEndepoinsEthernet(self.statisticsDialog)
+            self.sendPacketLength(self.statisticsDialog)
+            
+            self.statisticsDialog.ShowModal()
+            self.statisticsDialog.Destroy()
+            
+            
+        
+        pass
+    
+    def sendTime(self, dialog):
+        
+        firstTime = self.listaPacotes[0].get_time()
+        
+        lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+        
+        elapsedTime = lastTime - firstTime
+        
+        #
+        dialog.fieldTime(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(firstTime))), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(lastTime))), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
+    
+        pass
+    def sendDisplayTime(self, dialog):
+        
+        
+        
+        listInfoDisplay = []
+        
+        listInfoDisplay.append(self.path)
+        self.length = self.get_capturLength()
+        mbitLength = (((self.length * 8) / 1000) / 1000)
+        
+        listInfoDisplay.append(self.get_capturLength())
+        listInfoDisplay.append(len(self.listaPacotes))
+        
+        firstTime = self.listaPacotes[0].get_time()
+        
+        lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+        
+        elapsedTime = lastTime - firstTime
+        
+       
+        listInfoDisplay.append("%.3f" % elapsedTime)
+        
+        listInfoDisplay.append("%.3f" % (len(self.listaPacotes)/ elapsedTime))
+       
+        listInfoDisplay.append("%.3f" % (float(self.length) / float(len(self.listaPacotes))))
+        
+        listInfoDisplay.append("%.3f" % (self.length / float(elapsedTime)))
+        
+        listInfoDisplay.append("%.3f" % (mbitLength / float(elapsedTime)))
+        
+        dialog.fieldDisplay(listInfoDisplay)
+        
+        pass
+    
+    def sendEndepoinsEthernet(self, dialog):
+        
+        listInfo = []
+        
+        self.getEndPointsInfo()
+        
+        dialog.fieldEthernetListCtrl(listInfo)
+        
+        pass
+    
+    def sendPacketLength(self, dialog):
+        
+        info = [0,[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+        
+        for packet in self.listaPacotes:
+        
+            if packet.get_length() >= 0 and packet.get_length() <= 19:
+                info[1][0] += 1
+                
+                pass
+            elif packet.get_length() >= 20 and packet.get_length() <= 39:
+                info[2][0] += 1
+                pass
+            
+            elif packet.get_length() >= 40 and packet.get_length() <= 79:
+                info[3][0] += 1
+                
+                pass
+            elif packet.get_length() >= 80 and packet.get_length() <= 159:
+                info[4][0] += 1
+                
+            elif packet.get_length() >= 160 and packet.get_length() <= 319:
+                info[5][0] += 1
+                
+            elif packet.get_length() >= 320 and packet.get_length() <= 639:
+                info[6][0] += 1
+            elif packet.get_length() >= 640 and packet.get_length() <= 1279:
+                info[7][0] += 1
+            elif packet.get_length() >= 1280 and packet.get_length() <= 2559:
+                info[8][0] += 1
+            elif packet.get_length() >= 2560 and packet.get_length() <= 5119:         
+                info[9][0] += 1
+            elif packet.get_length() >= 5120:
+                info[10][0] += 1
+                pass
+                  
+        
+        info[0] = len(self.listaPacotes)
+        for i in range(1, 11):
+            
+            info[i][1] = ("%.3f" % (float(info[i][0] * 100) /len(self.listaPacotes)))
+            
+        
+          
+        dialog.fieldPacketLength(info)
+        
+        pass
+
+    def get_capturLength(self):
+        length = 0
+        for packet in self.listaPacotes:
+            
+            length += packet.get_length()
+            
+            pass
+        #print length
+        return length
+        pass
+    
+    def getEndPointsInfo(self):
+        
+        infoLis = {}
+        
+        for packet in self.listaPacotes:
+            
+            if len(infoLis) != 0 and not infoLis[packet.get_clEthernet().get_macSrc()]:
+            
+                infoLis.append((packet.get_clEthernet().get_macSrc(), [packet.get_clEthernet().get_macSrc()]))
+                
+            else:
+                
+                '''if len(infoLis[packet.get_clEthernet().get_macSrc()]) == 0:
+                    
+                    infoLis[packet.get_clEthernet().get_macSrc()][0] = packet.get_length()
+                else:
+                    
+                    infoLis[packet.get_clEthernet().get_macSrc()][0] += packet.get_length()
+                    '''
+            pass
     
         
 '''    

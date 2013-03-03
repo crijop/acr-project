@@ -6,7 +6,8 @@ Created on 2013/02/20
 
 class Packet(object):
         
-    def __init__(self, nr,  protocolo, time, clEthernet, clIp, clTcp, cImap):
+    def __init__(self, length, nr,  protocolo, time, clEthernet, clIp, clTcp, cImap):
+        self.length = length
         self.nr = nr
         self.protocolo = protocolo
         self.time = time
@@ -16,6 +17,10 @@ class Packet(object):
         self.cImap = cImap
         pass
     
+    def get_length(self):
+        
+        return self.length
+        pass
     def get_nr(self):
         return self.nr
         pass
