@@ -140,7 +140,7 @@ class MyDialog(wx.Dialog):
     pass
     def __set_properties(self):
         # begin wxGlade: MyDialog.__set_properties
-        self.SetTitle("dialog_1")
+        self.SetTitle("Escolher Interface")
         self.SetSize((400, 300))
         self.lableTitle.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, ""))
         # end wxGlade
@@ -256,7 +256,7 @@ class MainMenu(wx.Frame):
     
     def __set_properties(self):
         # begin wxGlade: MainMenu.__set_properties
-        self.SetTitle("SniffIMAP")
+        self.SetTitle("SniffIMAP - Filtro IMAP Activo")
         self.SetSize((800, 715))
         self.window_2_pane_1.SetScrollRate(10, 10)
         self.window_3_pane_1.SetScrollRate(10, 10)
@@ -321,6 +321,8 @@ class MainMenu(wx.Frame):
         elif str(item.get_clTcp().get_srcPort()) == "993"  or str(item.get_clTcp().get_dstPort()) == "993":
             
             self.list_ctrl.SetStringItem(index, 4, "IMAPS")
+        else:
+            self.list_ctrl.SetStringItem(index, 4, str(item.get_clTcp().get_srcPort()) + " - " + str(item.get_clTcp().get_dstPort()))
             
             pass
             
@@ -380,7 +382,10 @@ class MainMenu(wx.Frame):
             elif str(item.get_clTcp().get_srcPort()) == "993"  or str(item.get_clTcp().get_dstPort()) == "993":
                 
                 self.list_ctrl.SetStringItem(count, 4, "IMAPS")
+            
+            else: 
                 
+                self.list_ctrl.SetStringItem(count, 4, str(item.get_clTcp().get_srcPort()) + " - " + str(item.get_clTcp().get_dstPort()))
                 pass
                 
             self.list_ctrl.SetStringItem(count, 5, str(item.get_length()))
@@ -688,9 +693,9 @@ class MainMenu(wx.Frame):
         sys.exit(0)
         
         pass
-    
-    def stopCaptureAction(self):
-        pass
+    def changeTitle(self, title):
+        
+        self.SetTitle("SniffImap - " + title)
     
 # end of class MainMenu
 if __name__ == "__main__":

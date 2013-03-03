@@ -56,7 +56,7 @@ class Statistics(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.okThatsAll, self.button_1)
         
         self.panel_16 = wx.Panel(self, -1)
-
+        self.Centre()
         self.__set_properties()
         self.__do_layout()
         # end wxGlade
