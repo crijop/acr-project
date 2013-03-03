@@ -60,6 +60,7 @@ class SniffImap(object):
         
         self.frame_1 = frame
         self.listaPacotes = []
+        self.path = "temp.pacp"
         #global unrefined_packets
         self.unrefined_packets = []
         self.jobs = []
@@ -236,8 +237,8 @@ class SniffImap(object):
         
             lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
         
-            elapsedTime = lastTime - firstTime
-        
+            elapsedTime = float(lastTime) - float(firstTime)
+            
         
         
         self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
@@ -561,7 +562,7 @@ class SniffImap(object):
             self.listaPacotes = manager.list()
             self.stopCapture = manager.list()
             self.filterState = manager.list()
-            self.filterState[0] = self.filter
+            self.filterState.append(self.filter)
             
             
             self.stopCapture.append(False)
@@ -590,7 +591,7 @@ class SniffImap(object):
                 lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
             
                 elapsedTime = float(lastTime) - float(firstTime)
-        
+                print 
         
         
             self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
@@ -688,7 +689,7 @@ class SniffImap(object):
         
         lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
         
-        elapsedTime = lastTime - firstTime
+        elapsedTime = float(lastTime) - float(firstTime)
         
         #
         dialog.fieldTime(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(firstTime))), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(lastTime))), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
@@ -696,8 +697,7 @@ class SniffImap(object):
         pass
     def sendDisplayTime(self, dialog):
         
-        
-        
+               
         listInfoDisplay = []
         
         listInfoDisplay.append(self.path)
@@ -711,7 +711,7 @@ class SniffImap(object):
         
         lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
         
-        elapsedTime = lastTime - firstTime
+        elapsedTime = float(lastTime) - float(firstTime)
         
        
         listInfoDisplay.append("%.3f" % elapsedTime)
@@ -835,8 +835,9 @@ class SniffImap(object):
         
         
         if(self.filter == 1):
-            if wx.MessageBox("Deseja desactivar o filtro?\n\nO filtro activo permite ver\ntodos os pacotes da rede\ncontudo podem surgir alguns erros de visualização\npois o porgrama esta apenas preparado para\npacotes IMAP", "Confirmar", wx.YES_NO) == wx.YES :
+            if wx.MessageBox("Deseja desactivar o filtro?\n\nO filtro desactivo permite ver\ntodos os pacotes da rede\ncontudo podem surgir alguns erros de visualização\npois o porgrama esta apenas preparado para\npacotes IMAP\n\nA ALTERAÇÃO AO FILTRO APENAS SURTIRÁ EFEITO NA PRÓXIMA CAPTURA", "Confirmar", wx.YES_NO | wx.ICON_EXCLAMATION) == wx.YES :
                 self.filter = 0
+                self.frame_1.changeTitle("Filtro IMAP Desactivo")
             else:
                 menuItem.Check()
                 pass
@@ -844,6 +845,7 @@ class SniffImap(object):
             if wx.MessageBox("Filtro Activo", "Filtro Activo", wx.OK) == wx.OK:
                 
                 self.filter = 1
+                self.frame_1.changeTitle("Filtro IMAP Activo")
                 pass
         
         
