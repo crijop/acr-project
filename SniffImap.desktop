@@ -1,0 +1,12 @@
+
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SniffImap
+Comment=Programa de Captura de Pacotes IMAP
+Exec=python src/interface_teste.py
+Icon=utilities-system-monitor-symbolic
+Path=../src
+Terminal=false
+StartupNotify=false
+GenericName=
