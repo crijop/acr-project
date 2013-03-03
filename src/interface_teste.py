@@ -201,7 +201,7 @@ class MainMenu(wx.Frame):
         self.frame_1_menubar.Append(self.preferences, "Preferencias")
         
         self.help = wx.Menu()
-        self.help.Append(wx.ID_ABOUT, "Acerca", )
+        self.about = self.help.Append(wx.ID_ABOUT, "Acerca", )
         self.frame_1_menubar.Append(self.help, "Ajuda")
         self.SetMenuBar(self.frame_1_menubar)
         
