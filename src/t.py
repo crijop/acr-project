@@ -81,6 +81,7 @@ class SniffImap(object):
         self.frame_1.statistics_event(self.statisticsEvent)
         self.frame_1.sair_event(self.exitProgram)
         self.frame_1.filter_event(self.filterEvent)
+        self.frame_1.about_event(self.about_event)
         self.frame_1.newCaptura_event(self.newCapturaEvent)
         self.frame_1.stopCaptura_event(self.stopCaturaEvent)
         
@@ -819,7 +820,7 @@ class SniffImap(object):
             pass
     
     def about_event(self, event):
-        
+        #print "teste"
         self.aboutDialog = AboutDialog(None, -1, "")
         
         self.aboutDialog.ShowModal()
