@@ -843,7 +843,7 @@ class SniffImap(object):
                 menuItem.Check()
                 pass
         else:
-            if wx.MessageBox("Filtro Activo", "Filtro Activo", wx.OK) == wx.OK:
+            if wx.MessageBox("Filtro Activo\n\nA ALTERAÇÃO AO FILTRO APENAS SURTIRÁ EFEITO NA PRÓXIMA CAPTURA", "Filtro Activo", wx.OK) == wx.OK:
                 
                 self.filter = 1
                 self.frame_1.changeTitle("Filtro IMAP Activo")
