@@ -1,5 +1,4 @@
 #-*- coding:utf-8 -*-
-#!/usr/bin/python
 
 
 from Ethernet import *
@@ -7,11 +6,12 @@ from Imap import *
 from Ip import *
 from Packet import *
 from Tcp import *
+from aboutDialog import *
 from impacket.ImpactDecoder import EthDecoder
-from impacket.ImpactPacket import IP, TCP, UDP, ICMP
-from InterfaceGrafica import *
+from impacket.ImpactPacket import IP, TCP
 from multiprocessing import *
 from pcapy import *
+from RunningCapture import RunningCaptureDialog
 from statisticsDialog import *
 from struct import *
 from threading import Thread
@@ -21,7 +21,7 @@ import socket
 import sys
 import time
 import wx
-from aboutDialog import *
+#from impacket.ImpactPacket import IP, TCP, UDP, ICMP
 
 
 
@@ -191,8 +191,9 @@ class SniffImap(object):
                     self.exit(0)
                     pass
                 
+                print "PACOTEEEE"
                 
-                pass
+               
             print "Acabei de escutar"
         except Exception:
             
@@ -324,7 +325,7 @@ class SniffImap(object):
         pass
     
     
-    def filedRows_ofList(self, listUnrefinedPackets, listFinalPackets):
+    def filedRows_ofList(self, listUnrefinedPackets, listFinalPackets, stopCapture):
         
         print "Time para preparar para imprimir"
         position = 1
@@ -350,6 +351,9 @@ class SniffImap(object):
             else:
                 #Não Faz nada
                 #print "Vou Esperar ate que possa fazer imprimir de novo"
+                if stopCapture[0] == True:
+                    print "Vou parar de imprimir no ecrã"
+                    break
                 
                 pass
             pass
@@ -574,28 +578,15 @@ class SniffImap(object):
             self.t_begin_capture.start()
             
             
-            self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaPacotes, ))
+            self.t_begin_Filed = Process(target=self.filedRows_ofList, args=(self.l,self.listaPacotes,self.stopCapture, ))
             self.jobs.append(self.t_begin_Filed)
             self.t_begin_Filed.start()
-            
-            self.dialog_1 = CaptureDialog(self.stopCaturaEvent, self.frame_1.get_interfaceChoiced(), None, -1, "")
+            self.dialog_1 = RunningCaptureDialog(self.stopCaturaEvent, self.frame_1.get_interfaceChoiced(), None, -1, "")
             
             self.dialog_1.ShowModal()
             self.dialog_1.Destroy()
             
-            elapsedTime = 0
-        
-            if len(self.listaPacotes) != 0:
-                
-                firstTime = self.listaPacotes[0].get_time()
             
-                lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
-            
-                elapsedTime = float(lastTime) - float(firstTime)
-                print 
-        
-        
-            self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
         else:
             #não faz nada
         
@@ -613,14 +604,7 @@ class SniffImap(object):
         self.dialog_1.Destroy()
         #wx.SafeYield()
         
-        i = 0
-        for packet in self.listaPacotes:
-            
-            #print packet.get_nr()
-            #print packet
-            self.frame_1.field_lineOfList_ctrl(i,  packet)
-            #i += 1
-            pass
+        
         
         #print self.__testeeeee
         #self.__testeeeee = 10
@@ -643,6 +627,31 @@ class SniffImap(object):
         #self.t_begin_Filed.join()
         
         print "captra com premissao para parar"
+        print "Vai Preencher"
+        self.t_begin_Filed.join()
+        
+        i = 0
+        for packet in self.listaPacotes:
+            
+            #print packet.get_nr()
+            #print packet
+            self.frame_1.field_lineOfList_ctrl(i,  packet)
+            #i += 1
+            pass
+        
+        elapsedTime = 0
+        
+        if len(self.listaPacotes) != 0:
+            
+            firstTime = self.listaPacotes[0].get_time()
+        
+            lastTime = self.listaPacotes[len(self.listaPacotes)  - 1].get_time()
+        
+            elapsedTime = float(lastTime) - float(firstTime)
+            print 
+        
+        
+        self.frame_1.changeStatusBarInfo(len(self.listaPacotes), time.strftime('%H:%M:%S', time.gmtime(((float(elapsedTime))))))
         pass
     
     def saveCapture_event(self, event):

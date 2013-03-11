@@ -6,7 +6,7 @@ Created on 3 de Mar de 2013
 @author: xama
 '''
 # end of class MainMenu
-from source.InterfaceGrafica import MainMenu
+from source.InterfaceGrafica import *
 import wx
 
 
