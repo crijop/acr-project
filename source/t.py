@@ -191,7 +191,7 @@ class SniffImap(object):
                     self.exit(0)
                     pass
                 
-                print "PACOTEEEE"
+                #print "PACOTEEEE"
                 
                
             print "Acabei de escutar"
@@ -302,7 +302,7 @@ class SniffImap(object):
         
         #################################################
         #Protocolo IMAP HEADER
-        
+        imap_header = packet[54:]
         #################################################
         
         #Protocolo Ethernet
@@ -314,8 +314,12 @@ class SniffImap(object):
         #Protocolo TCP
         tcp = Tcp(str(srcPort), str(dstPort), str(sequenceNumber), str(acknowledgement), str(tcpHeaderLength), flagsTcp, wSizeValue, checksun)
         
+        
+        #Protocolo IMAP
+        imap = Imap(str(imap_header.encode("hex")))
+        
         #Pacote
-        p = Packet(len(packet), i, str(eth_protocol), epockTime, ethernet, ip, tcp, "IMAP")
+        p = Packet(len(packet), i, str(eth_protocol), epockTime, ethernet, ip, tcp, imap)
         
         
         
